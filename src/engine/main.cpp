@@ -21,6 +21,7 @@
 #ifdef ENABLE_OPENBLAS
 
 #include "cblas.h"
+#include "SearchTree.h"
 
 #endif
 
