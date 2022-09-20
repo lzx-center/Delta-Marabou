@@ -73,10 +73,9 @@ int main(int argc, char **argv) {
             return 0;
         };
 
-//        if (options->getBool(Options::INCREMENTAL_VERIFICATION)) {
-//            printf("hahaha");
-//            return 0;
-//        }
+        if (options->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            return 0;
+        }
 
         if (options->getBool(Options::DNC_MODE) ||
             (!options->getBool(Options::NO_PARALLEL_DEEPSOI) &&

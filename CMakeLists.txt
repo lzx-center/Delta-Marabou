@@ -181,13 +181,13 @@ if (MSVC)
 else()
     set(SCRIPT_EXTENSION sh)
 endif()
-find_package(Boost COMPONENTS program_options timer chrono thread)
+find_package(Boost COMPONENTS program_options timer chrono thread system serialization)
 # Find boost
 if (NOT ${Boost_FOUND})
     # bash file that downloads and install boost 1_68_0, the name need to match
     # BOOST_DIR variable
     execute_process(COMMAND ${TOOLS_DIR}/download_boost.${SCRIPT_EXTENSION})
-    find_package(Boost REQUIRED COMPONENTS program_options timer chrono thread)
+    find_package(Boost REQUIRED COMPONENTS program_options timer chrono thread system serialization)
 endif()
 set(LIBS_INCLUDES ${Boost_INCLUDE_DIRS})
 set(LIBS ${Boost_LIBRARIES})
