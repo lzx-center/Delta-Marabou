@@ -5,3 +5,5 @@ tools/OpenBLAS-0.3.19
 tools/pybind11-2.3.0
 tools/OpenBLASv0.3.19.tar.gz
 tools/pybind11_2_3_0.tar.gz
+latex/
+.idea/

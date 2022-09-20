@@ -617,6 +617,10 @@ void ReluConstraint::dump( String &output ) const
                            existsLowerBound( _aux ) ? Stringf( "%lf", getLowerBound( _aux ) ).ascii() : "-inf",
                            existsUpperBound( _aux ) ? Stringf( "%lf", getUpperBound( _aux ) ).ascii() : "inf" );
     }
+    output += Stringf("At position : layer: %u, node: %u",
+                      _position._layer,
+                      _position._node
+            );
 }
 
 void ReluConstraint::updateVariableIndex( unsigned oldIndex, unsigned newIndex )

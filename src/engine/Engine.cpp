@@ -162,8 +162,14 @@ bool Engine::solve( unsigned timeoutInSeconds )
     SignalHandler::getInstance()->registerClient( this );
 
     // Register the boundManager with all the PL constraints
-    for ( auto &plConstraint : _plConstraints )
+    for ( auto &plConstraint : _plConstraints ) {
         plConstraint->registerBoundManager( &_boundManager );
+
+        //debug use
+        String s;
+        plConstraint->dump(s);
+        printf("%s", s.ascii());
+    }
 
     if ( _solveWithMILP )
         return solveWithMILPEncoding( timeoutInSeconds );
