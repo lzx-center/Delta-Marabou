@@ -161,12 +161,6 @@ void SmtCore::performSplit()
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
 
     searchTree.setNodeInfo(_constraintForSplitting);
-    //For debug use
-    String s;
-    _constraintForSplitting->dump(s);
-    printf("constraint for split %s", s.ascii());
-    searchTree.getNode(searchTree.getCurrentIndex()).print();
-
 
     ASSERT( !splits.empty() );
     ASSERT( splits.size() >= 2 ); // Not really necessary, can add code to handle this case.
@@ -255,7 +249,6 @@ bool SmtCore::popSplit()
             delete _stack.back()->_engineState;
             delete _stack.back();
             _stack.popBack();
-            searchTree.currentGoBack();
             _context.pop();
 
             if ( _stack.empty() )

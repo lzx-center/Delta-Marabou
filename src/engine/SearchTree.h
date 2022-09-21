@@ -56,6 +56,7 @@ class SearchTree {
 private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
+    std::map<std::pair<int, int>, int> _mapSplitToNode;
 
 
     friend class boost::serialization::access;
@@ -86,8 +87,6 @@ public:
     void processCaseSplit(PiecewiseLinearCaseSplit* split);
 
     void setNodeInfo(PiecewiseLinearConstraint* pLConstraint);
-
-    void currentGoBack();
 
     void print();
 };

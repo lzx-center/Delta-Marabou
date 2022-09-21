@@ -43,15 +43,12 @@ void SearchTree::print() {
     }
 }
 
-void SearchTree::currentGoBack() {
-    _current = _nodes[_current]._preNode;
-}
 
 void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     int nodeIndex = newNode();
     auto &node  = _nodes[nodeIndex];
-    node._preNode = _current;
-    auto &preNode = _nodes[_current];
+    node._preNode = _mapSplitToNode[{split->_layer, split->_node}];
+    auto &preNode = _nodes[node._preNode];
     auto& tightenLists = split->getBoundTightenings();
     if (preNode.getType() == RELU) {
         bool inActive = true;
@@ -67,12 +64,6 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
             preNode._right = nodeIndex;
         }
     } else if (preNode.getType() == DISJUNCTION) {
-        if (tightenLists.size() != 1) {
-            String s; split->dump(s);
-            printf("splits: %s\n", s.ascii());
-            printf("question node\n");
-            preNode.print();
-        }
         assert(tightenLists.size() == 1 && "tighten size is not equal to 1");
         if (tightenLists.begin()->_type == Tightening::UB) {
             preNode._left = nodeIndex;
@@ -90,6 +81,7 @@ void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
     auto& node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
     node.setType(pLConstraint->getType());
+    _mapSplitToNode[{node._plLayer, node._plNode}] = _current;
 }
 
 int SearchTree::getCurrentIndex() {
@@ -99,7 +91,7 @@ int SearchTree::getCurrentIndex() {
 
 void SearchTreeNode::print() {
     printf(
-            "Tree node id: %d, is leaf node: %s\nConstraint is (%d, %d)\nleft node: %d, right node: %d, pre-node: %d\n",
+            "Tree node id: %d, is leaf node: %s\nConstraint position is (%d, %d)\nleft node: %d, right node: %d, pre-node: %d\n",
             _id, _isLeaf ? "true" : "false", _plLayer, _plNode, _right, _left, _preNode
     );
     String s = getStringType();

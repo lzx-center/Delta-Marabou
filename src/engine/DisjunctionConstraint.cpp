@@ -213,7 +213,11 @@ List<PiecewiseLinearConstraint::Fix> DisjunctionConstraint::getSmartFixes( ITabl
 
 List<PiecewiseLinearCaseSplit> DisjunctionConstraint::getCaseSplits() const
 {
-    return List<PiecewiseLinearCaseSplit>( _disjuncts.begin(), _disjuncts.end() );
+    auto list = List<PiecewiseLinearCaseSplit>( _disjuncts.begin(), _disjuncts.end() );
+    for (auto &v : list) {
+        v.setPostion(_position._layer, _position._node);
+    }
+    return list;
 }
 
 List<PhaseStatus> DisjunctionConstraint::getAllCases() const
