@@ -336,6 +336,7 @@ void DisjunctionConstraint::dump( String &output ) const
     }
 
     output += Stringf( "Active? %s.", _constraintActive ? "Yes" : "No" );
+    output += Stringf("At position: layer: %d, node: %d\n", _position._layer, _position._node);
 }
 
 void DisjunctionConstraint::updateVariableIndex( unsigned oldIndex, unsigned newIndex )

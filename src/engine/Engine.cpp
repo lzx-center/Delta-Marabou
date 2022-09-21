@@ -338,6 +338,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
         catch ( const InfeasibleQueryException & )
         {
             _tableau->toggleOptimization( false );
+            _smtCore.searchTree.currentGoBack();
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
             if ( !_smtCore.popSplit() )
@@ -353,6 +354,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
                     _statistics.print();
                 }
                 _exitCode = Engine::UNSAT;
+                _smtCore.searchTree.print();
                 return false;
             }
             else
@@ -2575,6 +2577,7 @@ PiecewiseLinearConstraint *Engine::pickSplitPLConstraintBasedOnIntervalWidth()
         splits.append( s2 );
         _disjunctionForSplitting = std::unique_ptr<DisjunctionConstraint>
             ( new DisjunctionConstraint( splits ) );
+        _disjunctionForSplitting->setPosition(0, inputVariableWithLargestInterval);
         return _disjunctionForSplitting.get();
     }
 }
@@ -2669,6 +2672,7 @@ bool Engine::restoreSmtState( SmtState & smtState )
     {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
+        _smtCore.searchTree.currentGoBack();
         if ( !_smtCore.popSplit() )
         {
             if ( _verbosity > 0 )
@@ -2679,6 +2683,7 @@ bool Engine::restoreSmtState( SmtState & smtState )
             _exitCode = Engine::UNSAT;
             for ( PiecewiseLinearConstraint *p : _plConstraints )
                 p->setActiveConstraint( true );
+            _smtCore.searchTree.print();
             return false;
         }
     }

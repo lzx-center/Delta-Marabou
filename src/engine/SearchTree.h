@@ -14,14 +14,29 @@
 
 struct SearchTreeNode {
 public:
-    SearchTreeNode(int id = 0, bool isLeaf = false) : _id(id), _isLeaf(isLeaf), _conflictVariable(-1), _activePhase(-1),
-                                                      _inactivePhase(-1), _preNode(-1), _plLayer(-1), _plNode(-1) {}
+    explicit SearchTreeNode(int id = 0, bool isLeaf = false) : _id(id), _isLeaf(isLeaf), _conflictVariable(-1), _left(-1),
+                                                      _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1),_type(UNKNOWN) {}
 
     int _id;
     bool _isLeaf;
-    int _conflictVariable, _activePhase, _inactivePhase, _preNode, _plLayer, _plNode;
+    int _conflictVariable;
+    // left represent:
+    //     inactive in Relu
+    //     lower part in Disjunction
+    // right represent on the contrary
+    int _left, _right;
+    int _preNode, _plLayer, _plNode;
     std::set<unsigned> _basicVariables;
+    PiecewiseLinearFunctionType _type;
 
+
+    void setPosition(PiecewiseLinearConstraint::Position &position);
+    void setType(PiecewiseLinearFunctionType type);
+    PiecewiseLinearFunctionType getType();
+    void markAsLeaf();
+    bool isLeaf();
+    String getStringType() const;
+    static String getTypeString(PiecewiseLinearFunctionType type);
     void print();
 private:
     friend class boost::serialization::access;
@@ -31,22 +46,15 @@ private:
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _plLayer;
-            ar & _plNode;
-            ar & _conflictVariable;
-            ar & _activePhase;
-            ar & _inactivePhase;
-            ar & _preNode;
-            ar & _id;
-            ar & _isLeaf;
-            ar & _basicVariables;
+            ar & _plLayer & _plNode & _conflictVariable;
+            ar & _left & _right & _preNode  & _id  & _isLeaf & _basicVariables & _type;
         }
     }
 };
 
 class SearchTree {
 private:
-    int _root, _current_node;
+    int _root, _current;
     std::vector<SearchTreeNode> _nodes;
 
 
@@ -55,9 +63,7 @@ private:
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _root;
-            ar & _current_node;
-            ar & _nodes;
+            ar & _root & _current & _nodes;
         }
     }
 
@@ -65,11 +71,23 @@ public:
     SearchTree();
     SearchTreeNode& getNode(int index);
 
-    size_t new_node();
+    size_t newNode();
+
+    void setCurrent(int index) {
+        _current = index;
+    }
 
     void saveToFile(std::string filePath);
 
     void loadFromFile(std::string filePath);
+
+    int getCurrentIndex();
+
+    void processCaseSplit(PiecewiseLinearCaseSplit* split);
+
+    void setNodeInfo(PiecewiseLinearConstraint* pLConstraint);
+
+    void currentGoBack();
 
     void print();
 };

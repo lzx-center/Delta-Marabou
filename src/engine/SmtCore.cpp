@@ -159,6 +159,15 @@ void SmtCore::performSplit()
     //   1. Obtain the splits.
     //   2. Disable the constraint, so that it is marked as disbaled in the EngineState.
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
+
+    searchTree.setNodeInfo(_constraintForSplitting);
+    //For debug use
+    String s;
+    _constraintForSplitting->dump(s);
+    printf("constraint for split %s", s.ascii());
+    searchTree.getNode(searchTree.getCurrentIndex()).print();
+
+
     ASSERT( !splits.empty() );
     ASSERT( splits.size() >= 2 ); // Not really necessary, can add code to handle this case.
     _constraintForSplitting->setActiveConstraint( false );
@@ -177,6 +186,7 @@ void SmtCore::performSplit()
     ASSERT( split->getEquations().size() == 0 );
     _engine->applySplit( *split );
     stackEntry->_activeSplit = *split;
+    searchTree.processCaseSplit(&(*split));
 
     // Store the remaining splits on the stack, for later
     stackEntry->_engineState = stateBeforeSplits;
@@ -245,6 +255,7 @@ bool SmtCore::popSplit()
             delete _stack.back()->_engineState;
             delete _stack.back();
             _stack.popBack();
+            searchTree.currentGoBack();
             _context.pop();
 
             if ( _stack.empty() )
@@ -279,6 +290,7 @@ bool SmtCore::popSplit()
         _engine->preContextPushHook();
         _context.push();
         _engine->applySplit( *split );
+        searchTree.processCaseSplit(&(*split));
         SMT_LOG( "\tApplying new split - DONE" );
 
         stackEntry->_activeSplit = *split;
