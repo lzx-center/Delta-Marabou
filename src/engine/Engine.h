@@ -184,6 +184,7 @@ public:
     */
     void storeSmtState( SmtState &smtState );
 
+    SearchTree& getSearchTree();
     /*
       Pick the piecewise linear constraint for splitting
     */
@@ -226,6 +227,8 @@ public:
     bool applyAllValidConstraintCaseSplits();
 
     void setRandomSeed( unsigned seed );
+
+    void renameVariableInSearchTree();
 
 private:
 

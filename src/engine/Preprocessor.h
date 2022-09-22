@@ -57,6 +57,8 @@ public:
     */
     unsigned getNewIndex( unsigned oldIndex ) const;
 
+    unsigned getOldIndex( unsigned newIndex) const;
+
 private:
 
     void freeMemoryIfNeeded();
@@ -170,6 +172,7 @@ private:
       indices were changed during preprocessing.
     */
     Map<unsigned, unsigned> _oldIndexToNewIndex;
+    Map<unsigned, unsigned> _newIndexToOldIndex;
 
     /*
       For debugging only

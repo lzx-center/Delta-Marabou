@@ -182,6 +182,10 @@ void Marabou::solveQuery()
     if ( _engine.processInputQuery( _inputQuery ) )
         _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
 
+    _engine.renameVariableInSearchTree();
+    auto& searchTree = _engine.getSearchTree();
+    searchTree.print();
+
     if ( _engine.getExitCode() == Engine::SAT )
         _engine.extractSolution( _inputQuery );
 }

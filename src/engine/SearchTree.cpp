@@ -92,10 +92,15 @@ void SearchTree::markLeaf(const Set<unsigned>& varSet, unsigned conflict) {
     auto &node = _nodes[_current];
     assert(node._type == UNKNOWN);
     node._isLeaf = true;
+    node._basicVariables.reserve(varSet.size());
     for (auto var : varSet) {
-        node._basicVariables.insert(var);
+        node._basicVariables.push_back(var);
     }
     node._conflictVariable = conflict;
+}
+
+size_t SearchTree::size() {
+    return _nodes.size();
 }
 
 

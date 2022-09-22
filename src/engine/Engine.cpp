@@ -354,7 +354,6 @@ bool Engine::solve( unsigned timeoutInSeconds )
                     _statistics.print();
                 }
                 _exitCode = Engine::UNSAT;
-                _smtCore.searchTree.print();
                 return false;
             }
             else
@@ -2683,7 +2682,6 @@ bool Engine::restoreSmtState( SmtState & smtState )
             _exitCode = Engine::UNSAT;
             for ( PiecewiseLinearConstraint *p : _plConstraints )
                 p->setActiveConstraint( true );
-            _smtCore.searchTree.print();
             return false;
         }
     }
@@ -3110,4 +3108,21 @@ Set<unsigned> Engine::getBasicVariable() {
 unsigned Engine::getInconsistentVariable() {
     auto tighten = _boundManager.getFirstInconsistentTightening();
     return tighten._variable;
+}
+
+SearchTree &Engine::getSearchTree() {
+    return _smtCore.searchTree;
+}
+
+void Engine::renameVariableInSearchTree() {
+    auto size = _smtCore.searchTree.size();
+    for (size_t i = 0; i < size; ++ i) {
+        auto& node = _smtCore.searchTree.getNode(size);
+        if (node._isLeaf) {
+            node._conflictVariable = _preprocessor.getOldIndex(node._conflictVariable);
+            for (auto &v : node._basicVariables) {
+                v = _preprocessor.getOldIndex(v);
+            }
+        }
+    }
 }

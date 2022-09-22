@@ -26,9 +26,8 @@ public:
     // right represent on the contrary
     int _left, _right;
     int _preNode, _plLayer, _plNode;
-    std::set<unsigned> _basicVariables;
+    std::vector<unsigned> _basicVariables;
     PiecewiseLinearFunctionType _type;
-
 
     void setPosition(PiecewiseLinearConstraint::Position &position);
     void setType(PiecewiseLinearFunctionType type);
@@ -71,6 +70,8 @@ private:
 public:
     SearchTree();
     SearchTreeNode& getNode(int index);
+
+    size_t size();
 
     void markLeaf(const Set<unsigned>& varSet, unsigned conflict);
 
