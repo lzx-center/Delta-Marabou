@@ -25,6 +25,7 @@
 #include "SmtStackEntry.h"
 #include "Statistics.h"
 #include "context/context.h"
+#include "SearchTree.h"
 
 #include <memory>
 
@@ -41,6 +42,7 @@ class SmtCore
 public:
     SmtCore( IEngine *engine );
     ~SmtCore();
+    SearchTree searchTree;
 
     /*
       Clear the stack.
@@ -174,6 +176,7 @@ private:
     /*
       Valid splits that were implied by level 0 of the stack.
     */
+
     List<PiecewiseLinearCaseSplit> _impliedValidSplitsAtRoot;
 
     /*

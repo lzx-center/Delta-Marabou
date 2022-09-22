@@ -19,7 +19,10 @@
 #include "Options.h"
 
 #ifdef ENABLE_OPENBLAS
+
 #include "cblas.h"
+#include "SearchTree.h"
+
 #endif
 
 static std::string getCompiler() {
@@ -41,61 +44,57 @@ static std::string getCompiledDateTime() {
     return __DATE__ " " __TIME__;
 }
 
-void printVersion()
-{
+void printVersion() {
     std::cout <<
-        "Marabou version " << MARABOU_VERSION <<
-        " [" << GIT_BRANCH << " " << GIT_COMMIT_HASH << "]"
-	      << "\ncompiled with " << getCompiler()
-	      << "\non " << getCompiledDateTime()
-	      << std::endl;
+              "Marabou version " << MARABOU_VERSION <<
+              " [" << GIT_BRANCH << " " << GIT_COMMIT_HASH << "]"
+              << "\ncompiled with " << getCompiler()
+              << "\non " << getCompiledDateTime()
+              << std::endl;
 }
 
-void printHelpMessage()
-{
+void printHelpMessage() {
     printVersion();
     Options::get()->printHelpMessage();
 }
 
-int main( int argc, char **argv )
-{
-    try
-    {
+int main(int argc, char **argv) {
+    try {
         Options *options = Options::get();
-        options->parseOptions( argc, argv );
+        options->parseOptions(argc, argv);
 
-        if ( options->getBool( Options::HELP ) )
-        {
+        if (options->getBool(Options::HELP)) {
             printHelpMessage();
             return 0;
         };
 
-        if ( options->getBool( Options::VERSION ) )
-        {
+        if (options->getBool(Options::VERSION)) {
             printVersion();
             return 0;
         };
 
-        if ( options->getBool( Options::DNC_MODE ) ||
-             ( !options->getBool( Options::NO_PARALLEL_DEEPSOI ) &&
-               !options->getBool( Options::SOLVE_WITH_MILP ) &&
-               options->getInt( Options::NUM_WORKERS ) > 1 ) )
+        if (options->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            return 0;
+        }
+
+        if (options->getBool(Options::DNC_MODE) ||
+            (!options->getBool(Options::NO_PARALLEL_DEEPSOI) &&
+             !options->getBool(Options::SOLVE_WITH_MILP) &&
+             options->getInt(Options::NUM_WORKERS) > 1))
             DnCMarabou().run();
-        else
-	{
+        else {
 #ifdef ENABLE_OPENBLAS
-	    openblas_set_num_threads( options->getInt( Options::NUM_BLAS_THREADS ) );
+            openblas_set_num_threads(options->getInt(Options::NUM_BLAS_THREADS));
 #endif
             Marabou().run();
-	}
+        }
     }
-    catch ( const Error &e )
-    {
-        printf( "Caught a %s error. Code: %u, Errno: %i, Message: %s.\n",
-                e.getErrorClass(),
-                e.getCode(),
-                e.getErrno(),
-                e.getUserMessage() );
+    catch (const Error &e) {
+        printf("Caught a %s error. Code: %u, Errno: %i, Message: %s.\n",
+               e.getErrorClass(),
+               e.getCode(),
+               e.getErrno(),
+               e.getUserMessage());
 
         return 1;
     }

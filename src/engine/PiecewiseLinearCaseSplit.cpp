@@ -53,6 +53,7 @@ void PiecewiseLinearCaseSplit::dump( String &output ) const
         output += String( "\t\t" );
         equation.dump();
     }
+    output += Stringf("Position at: (%d, %d)", _layer, _node);
 }
 
 void PiecewiseLinearCaseSplit::dump() const

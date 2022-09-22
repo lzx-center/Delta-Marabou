@@ -269,7 +269,7 @@ public:
 
         // Pop Split1, check that the tableau was restored and that
         // a Split2 was performed
-        TS_ASSERT( smtCore.popSplit() );
+        TS_ASSERT(smtCore.popSplit());
         TS_ASSERT_EQUALS( smtCore.getStackDepth(), 1U );
 
         TS_ASSERT_EQUALS( engine->lastRestoredState, originalState );
@@ -293,7 +293,7 @@ public:
 
         // Pop Split2, check that the tableau was restored and that
         // a Split3 was performed
-        TS_ASSERT( smtCore.popSplit() );
+        TS_ASSERT(smtCore.popSplit());
         TS_ASSERT_EQUALS( smtCore.getStackDepth(), 1U );
 
         TS_ASSERT_EQUALS( engine->lastRestoredState, originalState );
@@ -313,7 +313,7 @@ public:
         engine->lastEquations.clear();
 
         // Final pop
-        TS_ASSERT( !smtCore.popSplit() );
+        TS_ASSERT( !smtCore.popSplit());
         TS_ASSERT( !engine->lastRestoredState );
         TS_ASSERT_EQUALS( smtCore.getStackDepth(), 0U );
     }
@@ -513,7 +513,7 @@ public:
 
         clearSmtState( smtState );
 
-        TS_ASSERT_THROWS_NOTHING( smtCore.popSplit() );
+        TS_ASSERT_THROWS_NOTHING(smtCore.popSplit());
 
         smtCore.storeSmtState( smtState );
         TS_ASSERT( smtState._impliedValidSplitsAtRoot.size() == 1 );
@@ -534,7 +534,7 @@ public:
 
         clearSmtState( smtState );
 
-        TS_ASSERT_THROWS_NOTHING( smtCore.popSplit() );
+        TS_ASSERT_THROWS_NOTHING(smtCore.popSplit());
     }
 
     void clearSmtState( SmtState &smtState )

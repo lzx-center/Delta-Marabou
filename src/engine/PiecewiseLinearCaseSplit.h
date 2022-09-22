@@ -25,6 +25,8 @@
 class PiecewiseLinearCaseSplit
 {
 public:
+    int _layer = -1;
+    int _node = -1;
     /*
       Store information regarding a bound tightening.
     */
@@ -52,6 +54,11 @@ public:
       Change the index of a variable that appears in this case split
     */
     void updateVariableIndex( unsigned oldIndex, unsigned newIndex );
+
+    void setPostion(int layer, int node) {
+        _layer = layer;
+        _node = node;
+    }
 
 private:
     /*

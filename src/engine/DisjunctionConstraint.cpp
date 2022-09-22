@@ -213,7 +213,11 @@ List<PiecewiseLinearConstraint::Fix> DisjunctionConstraint::getSmartFixes( ITabl
 
 List<PiecewiseLinearCaseSplit> DisjunctionConstraint::getCaseSplits() const
 {
-    return List<PiecewiseLinearCaseSplit>( _disjuncts.begin(), _disjuncts.end() );
+    auto list = List<PiecewiseLinearCaseSplit>( _disjuncts.begin(), _disjuncts.end() );
+    for (auto &v : list) {
+        v.setPostion(_position._layer, _position._node);
+    }
+    return list;
 }
 
 List<PhaseStatus> DisjunctionConstraint::getAllCases() const
@@ -336,6 +340,7 @@ void DisjunctionConstraint::dump( String &output ) const
     }
 
     output += Stringf( "Active? %s.", _constraintActive ? "Yes" : "No" );
+    output += Stringf("At position: layer: %d, node: %d\n", _position._layer, _position._node);
 }
 
 void DisjunctionConstraint::updateVariableIndex( unsigned oldIndex, unsigned newIndex )

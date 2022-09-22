@@ -230,6 +230,7 @@ struct MarabouOptions {
     Options::get()->setBool( Options::SOLVE_WITH_MILP, _solveWithMILP );
     Options::get()->setBool( Options::DUMP_BOUNDS, _dumpBounds );
     Options::get()->setBool( Options::PERFORM_LP_TIGHTENING_AFTER_SPLIT, _performLpTighteningAfterSplit );
+    Options::get()->setBool(Options::INCREMENTAL_VERIFICATION, _incrementalVerification);
 
     // int options
     Options::get()->setInt( Options::NUM_WORKERS, _numWorkers );
@@ -255,6 +256,7 @@ struct MarabouOptions {
   }
 
     bool _snc;
+    bool _incrementalVerification;
     bool _restoreTreeStates;
     bool _solveWithMILP;
     bool _dumpBounds;

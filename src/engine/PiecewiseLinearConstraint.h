@@ -113,6 +113,12 @@ public:
         double _value;
     };
 
+    // struct for indentify where the constraint is
+    struct Position {
+        unsigned _layer, _node;
+        Position(unsigned layer=0, unsigned node=0) : _layer(layer), _node(node) {}
+    };
+
     PiecewiseLinearConstraint();
     PiecewiseLinearConstraint( unsigned numCases );
     virtual ~PiecewiseLinearConstraint()
@@ -124,7 +130,16 @@ public:
     {
         return _score < other._score;
     }
+    Position _position;
 
+    void setPosition(unsigned layer, unsigned node) {
+        _position._layer = layer;
+        _position._node = node;
+    }
+
+    Position getPosition() {
+        return _position;
+    }
     /*
       Get the type of this constraint.
     */

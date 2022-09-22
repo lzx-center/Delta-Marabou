@@ -162,8 +162,14 @@ bool Engine::solve( unsigned timeoutInSeconds )
     SignalHandler::getInstance()->registerClient( this );
 
     // Register the boundManager with all the PL constraints
-    for ( auto &plConstraint : _plConstraints )
+    for ( auto &plConstraint : _plConstraints ) {
         plConstraint->registerBoundManager( &_boundManager );
+
+        //debug use
+//        String s;
+//        plConstraint->dump(s);
+//        printf("%s", s.ascii());
+    }
 
     if ( _solveWithMILP )
         return solveWithMILPEncoding( timeoutInSeconds );
@@ -332,9 +338,10 @@ bool Engine::solve( unsigned timeoutInSeconds )
         catch ( const InfeasibleQueryException & )
         {
             _tableau->toggleOptimization( false );
+            _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
-            if ( !_smtCore.popSplit() )
+            if ( !_smtCore.popSplit())
             {
                 struct timespec mainLoopEnd = TimeUtils::sampleMicro();
                 _statistics.incLongAttribute
@@ -347,6 +354,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
                     _statistics.print();
                 }
                 _exitCode = Engine::UNSAT;
+                _smtCore.searchTree.print();
                 return false;
             }
             else
@@ -2569,6 +2577,7 @@ PiecewiseLinearConstraint *Engine::pickSplitPLConstraintBasedOnIntervalWidth()
         splits.append( s2 );
         _disjunctionForSplitting = std::unique_ptr<DisjunctionConstraint>
             ( new DisjunctionConstraint( splits ) );
+        _disjunctionForSplitting->setPosition(0, inputVariableWithLargestInterval);
         return _disjunctionForSplitting.get();
     }
 }
@@ -2663,7 +2672,8 @@ bool Engine::restoreSmtState( SmtState & smtState )
     {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
-        if ( !_smtCore.popSplit() )
+        _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+        if ( !_smtCore.popSplit())
         {
             if ( _verbosity > 0 )
             {
@@ -2673,6 +2683,7 @@ bool Engine::restoreSmtState( SmtState & smtState )
             _exitCode = Engine::UNSAT;
             for ( PiecewiseLinearConstraint *p : _plConstraints )
                 p->setActiveConstraint( true );
+            _smtCore.searchTree.print();
             return false;
         }
     }
@@ -3085,7 +3096,18 @@ void Engine::checkGurobiBoundConsistency() const
     }
 }
 
+
+
 bool Engine::consistentBounds() const
 {
     return _boundManager.consistentBounds();
+}
+
+Set<unsigned> Engine::getBasicVariable() {
+    return _tableau->getBasicVariables();
+}
+
+unsigned Engine::getInconsistentVariable() {
+    auto tighten = _boundManager.getFirstInconsistentTightening();
+    return tighten._variable;
 }

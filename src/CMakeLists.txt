@@ -1,6 +1,6 @@
 add_custom_target(build-unit-tests ALL)
 add_dependencies(build-tests build-unit-tests)
-
+add_compile_options( -lboost_serialization -lboost_system)
 macro(marabou_add_test test_name test_dir add_common_real add_engine_real labels)
     get_filename_component(name ${test_name} NAME_WE)
     set(test_src ${name}.cc)

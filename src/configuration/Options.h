@@ -70,6 +70,9 @@ public:
 
         // Import assignment for debugging purposes, use IMPORT_ASSIGNMENT_FILE to specify the file (default: assignment.txt)
         DEBUG_ASSIGNMENT,
+
+        // Incremental verification progress
+        INCREMENTAL_VERIFICATION
     };
 
     enum IntOptions {
