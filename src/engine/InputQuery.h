@@ -140,6 +140,8 @@ public:
     void setNetworkLevelReasoner( NLR::NetworkLevelReasoner *nlr );
     NLR::NetworkLevelReasoner *getNetworkLevelReasoner() const;
 
+    PiecewiseLinearConstraint *getConstraintFromPosition(PiecewiseLinearConstraint::Position position);
+
 private:
     unsigned _numberOfVariables;
     List<Equation> _equations;
@@ -147,6 +149,7 @@ private:
     Map<unsigned, double> _upperBounds;
     List<PiecewiseLinearConstraint *> _plConstraints;
     List<TranscendentalConstraint *> _tsConstraints;
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToPLConstraints;
 
     Map<unsigned, double> _solution;
 

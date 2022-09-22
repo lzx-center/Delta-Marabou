@@ -230,6 +230,8 @@ public:
 
     void renameVariableInSearchTree();
 
+    void renameSearchTreeVariableInIncrementalProcess();
+
 private:
 
     enum BasisRestorationRequired {

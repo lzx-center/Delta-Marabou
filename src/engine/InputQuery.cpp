@@ -147,6 +147,7 @@ double InputQuery::getSolutionValue( unsigned variable ) const
 
 void InputQuery::addPiecewiseLinearConstraint( PiecewiseLinearConstraint *constraint )
 {
+    _positionToPLConstraints[constraint->_position] = constraint;
     _plConstraints.append( constraint );
 }
 
@@ -1284,4 +1285,8 @@ bool InputQuery::constructMaxLayer( NLR::NetworkLevelReasoner *nlr,
 
     INPUT_QUERY_LOG( "\tSuccessful!" );
     return true;
+}
+
+PiecewiseLinearConstraint *InputQuery::getConstraintFromPosition(PiecewiseLinearConstraint::Position position) {
+    return _positionToPLConstraints[position];
 }

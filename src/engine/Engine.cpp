@@ -3121,3 +3121,16 @@ void Engine::renameVariableInSearchTree() {
         }
     }
 }
+
+void Engine::renameSearchTreeVariableInIncrementalProcess() {
+    auto size = _smtCore.searchTree.size();
+    for (size_t i = 0; i < size; ++ i) {
+        auto& node = _smtCore.searchTree.getNode(size);
+        if (node._isLeaf) {
+            node._conflictVariable = _preprocessor.getNewIndex(node._conflictVariable);
+            for (auto &v : node._basicVariables) {
+                v = _preprocessor.getNewIndex(v);
+            }
+        }
+    }
+}

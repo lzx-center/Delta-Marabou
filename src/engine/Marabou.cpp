@@ -284,6 +284,7 @@ void Marabou::incrementalRun() {
 //    struct timespec start = TimeUtils::sampleMicro();
     printf("hahah");
     loadSearchTree();
+    _engine.renameSearchTreeVariableInIncrementalProcess();
 //    auto& searchTree = _engine.getSearchTree();
 //    searchTree.print();
 //    prepareInputQuery();
