@@ -290,6 +290,9 @@ bool SmtCore::popSplit()
         stackEntry->_alternativeSplits.erase( split );
 
         inconsistent = !_engine->consistentBounds();
+        if (inconsistent) {
+            searchTree.markLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
+        }
     }
 
     if ( _statistics )

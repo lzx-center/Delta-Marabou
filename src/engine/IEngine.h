@@ -121,6 +121,10 @@ public:
     virtual CVC4::context::Context &getContext() = 0;
 
     virtual bool consistentBounds() const = 0;
+
+    virtual Set<unsigned> getBasicVariable() = 0;
+
+    virtual unsigned getInconsistentVariable() = 0;
 };
 
 #endif // __IEngine_h__

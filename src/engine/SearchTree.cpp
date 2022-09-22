@@ -88,6 +88,16 @@ int SearchTree::getCurrentIndex() {
     return _current;
 }
 
+void SearchTree::markLeaf(const Set<unsigned>& varSet, unsigned conflict) {
+    auto &node = _nodes[_current];
+    assert(node._type == UNKNOWN);
+    node._isLeaf = true;
+    for (auto var : varSet) {
+        node._basicVariables.insert(var);
+    }
+    node._conflictVariable = conflict;
+}
+
 
 void SearchTreeNode::print() {
     printf(
@@ -96,6 +106,7 @@ void SearchTreeNode::print() {
     );
     String s = getStringType();
     printf("Node type: %s\n", s.ascii());
+    printf("Conflict variable: %d\n", _conflictVariable);
     if (!_basicVariables.empty()) {
         printf("Basic variables: ");
         for (auto v : _basicVariables) {
@@ -141,7 +152,7 @@ String SearchTreeNode::getTypeString(PiecewiseLinearFunctionType type) {
             s = "Absolute value";
             break;
         case MAX:
-            s = "<m>ax";
+            s = "Max";
             break;
         case DISJUNCTION:
             s = "Disjunction";

@@ -338,9 +338,10 @@ bool Engine::solve( unsigned timeoutInSeconds )
         catch ( const InfeasibleQueryException & )
         {
             _tableau->toggleOptimization( false );
+            _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
-            if ( !_smtCore.popSplit() )
+            if ( !_smtCore.popSplit())
             {
                 struct timespec mainLoopEnd = TimeUtils::sampleMicro();
                 _statistics.incLongAttribute
@@ -2671,7 +2672,8 @@ bool Engine::restoreSmtState( SmtState & smtState )
     {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
-        if ( !_smtCore.popSplit() )
+        _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+        if ( !_smtCore.popSplit())
         {
             if ( _verbosity > 0 )
             {
@@ -3094,7 +3096,18 @@ void Engine::checkGurobiBoundConsistency() const
     }
 }
 
+
+
 bool Engine::consistentBounds() const
 {
     return _boundManager.consistentBounds();
+}
+
+Set<unsigned> Engine::getBasicVariable() {
+    return _tableau->getBasicVariables();
+}
+
+unsigned Engine::getInconsistentVariable() {
+    auto tighten = _boundManager.getFirstInconsistentTightening();
+    return tighten._variable;
 }

@@ -139,6 +139,8 @@ public:
      */
     void registerRowBoundTightener( IRowBoundTightener *ptrRowBoundTightener );
 
+    Tightening getFirstInconsistentTightening() { return _firstInconsistentTightening; }
+
 private:
     CVC4::context::Context &_context;
     unsigned _size;

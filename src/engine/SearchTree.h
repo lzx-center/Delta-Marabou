@@ -72,6 +72,8 @@ public:
     SearchTree();
     SearchTreeNode& getNode(int index);
 
+    void markLeaf(const Set<unsigned>& varSet, unsigned conflict);
+
     size_t newNode();
 
     void setCurrent(int index) {

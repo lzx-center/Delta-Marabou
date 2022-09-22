@@ -738,6 +738,10 @@ private:
       Check that the variable bounds in Gurobi is up-to-date.
     */
     void checkGurobiBoundConsistency() const;
+
+    Set<unsigned> getBasicVariable();
+
+    unsigned getInconsistentVariable();
 };
 
 #endif // __Engine_h__
