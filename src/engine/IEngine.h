@@ -21,6 +21,7 @@
 #include "TableauStateStorageLevel.h"
 #include "List.h"
 #include "context/context.h"
+#include "Set.h"
 
 #ifdef _WIN32
 #undef ERROR

@@ -44,6 +44,7 @@ namespace CxxTest
     template<class X, class Y>
     bool equals( X x, Y y )
     {
+        (void) y;
         return (x == y);
     }
 
