@@ -73,10 +73,6 @@ int main(int argc, char **argv) {
             return 0;
         };
 
-        if (options->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            return 0;
-        }
-
         if (options->getBool(Options::DNC_MODE) ||
             (!options->getBool(Options::NO_PARALLEL_DEEPSOI) &&
              !options->getBool(Options::SOLVE_WITH_MILP) &&
@@ -86,7 +82,11 @@ int main(int argc, char **argv) {
 #ifdef ENABLE_OPENBLAS
             openblas_set_num_threads(options->getInt(Options::NUM_BLAS_THREADS));
 #endif
-            Marabou().run();
+            if (options->getBool(Options::INCREMENTAL_VERIFICATION)) {
+                Marabou().incrementalRun();
+            } else {
+                Marabou().run();
+            }
         }
     }
     catch (const Error &e) {

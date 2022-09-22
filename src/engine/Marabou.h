@@ -31,6 +31,12 @@ public:
     */
     void run();
 
+    void incrementalRun();
+
+    void loadSearchTree();
+
+    void saveSearchTree();
+
 private:
     InputQuery _inputQuery;
 

@@ -81,9 +81,9 @@ public:
         _current = index;
     }
 
-    void saveToFile(std::string filePath);
+    void saveToFile(const String& filePath) const;
 
-    void loadFromFile(std::string filePath);
+    void loadFromFile(const String& filePath);
 
     int getCurrentIndex();
 

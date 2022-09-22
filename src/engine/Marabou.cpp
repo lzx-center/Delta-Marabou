@@ -183,8 +183,7 @@ void Marabou::solveQuery()
         _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
 
     _engine.renameVariableInSearchTree();
-    auto& searchTree = _engine.getSearchTree();
-    searchTree.print();
+    saveSearchTree();
 
     if ( _engine.getExitCode() == Engine::SAT )
         _engine.extractSolution( _inputQuery );
@@ -281,6 +280,57 @@ void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
     }
 }
 
+void Marabou::incrementalRun() {
+//    struct timespec start = TimeUtils::sampleMicro();
+    printf("hahah");
+    loadSearchTree();
+//    auto& searchTree = _engine.getSearchTree();
+//    searchTree.print();
+//    prepareInputQuery();
+//    solveQuery();
+//
+//    struct timespec end = TimeUtils::sampleMicro();
+//
+//    unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
+//    displayResults( totalElapsed );
+//
+//    if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
+//        exportAssignment();
+}
+
+void Marabou::loadSearchTree() {
+    String inputQueryFilePath = Options::get()->getString( Options::INPUT_QUERY_FILE_PATH );
+    if ( inputQueryFilePath.length() > 0 ) {
+        assert(false && "can not handle query yet");
+    }
+    else {
+        String networkFilePath = Options::get()->getString( Options::INPUT_FILE_PATH );
+        String networkSearchTree = networkFilePath + String(".searchTree");
+        if (!File::exists(networkSearchTree)) {
+            printf( "Error: the specified network seach tree file (%s) doesn't exist!\n", networkFilePath.ascii() );
+            throw MarabouError( MarabouError::FILE_DOESNT_EXIST, networkSearchTree.ascii() );
+        }
+        auto& searchTree = _engine.getSearchTree();
+        searchTree.loadFromFile(networkSearchTree);
+    }
+
+}
+
+void Marabou::saveSearchTree() {
+    String inputQueryFilePath = Options::get()->getString( Options::INPUT_QUERY_FILE_PATH );
+    if ( inputQueryFilePath.length() > 0 ) {
+        assert(false && "can not handle query yet");
+    }
+    else {
+        String networkSearchTree = Options::get()->getString( Options::SEARCH_TREE_FILE_PATH );
+        if (!File::exists(networkSearchTree)) {
+            printf( "Error: the specified network seach tree file (%s) doesn't exist!\n", networkSearchTree.ascii() );
+            throw MarabouError( MarabouError::FILE_DOESNT_EXIST, networkSearchTree.ascii() );
+        }
+        auto& searchTree = _engine.getSearchTree();
+        searchTree.saveToFile(networkSearchTree);
+    }
+}
 //
 // Local Variables:
 // compile-command: "make -C ../.. "

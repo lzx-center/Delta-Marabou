@@ -22,15 +22,15 @@ SearchTreeNode &SearchTree::getNode(int index) {
     return _nodes[index];
 }
 
-void SearchTree::saveToFile(std::string filePath) {
-    std::ofstream ofs(filePath);
+void SearchTree::saveToFile(const String& filePath) const {
+    std::ofstream ofs(filePath.ascii());
     boost::archive::text_oarchive oa(ofs);
     oa << *this;
 }
 
-void SearchTree::loadFromFile(std::string filePath) {
+void SearchTree::loadFromFile(const String& filePath) {
     // create and open an archive for input
-    std::ifstream ifs(filePath);
+    std::ifstream ifs(filePath.ascii());
     boost::archive::text_iarchive ia(ifs);
     // read class state from archive
     ia >> (*this);

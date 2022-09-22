@@ -164,11 +164,6 @@ bool Engine::solve( unsigned timeoutInSeconds )
     // Register the boundManager with all the PL constraints
     for ( auto &plConstraint : _plConstraints ) {
         plConstraint->registerBoundManager( &_boundManager );
-
-        //debug use
-//        String s;
-//        plConstraint->dump(s);
-//        printf("%s", s.ascii());
     }
 
     if ( _solveWithMILP )
