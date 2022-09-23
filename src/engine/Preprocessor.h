@@ -167,6 +167,7 @@ private:
     */
     Map<unsigned, unsigned> _mergedVariables;
 
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint* > _eliminateConstraint;
     /*
       Mapping of old variable indices to new varibale indices, if
       indices were changed during preprocessing.

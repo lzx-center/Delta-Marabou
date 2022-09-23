@@ -24,17 +24,21 @@ SearchTreeNode &SearchTree::getNode(int index) {
 
 void SearchTree::saveToFile(const String& filePath) const {
     std::ofstream ofs(filePath.ascii());
-    boost::archive::text_oarchive oa(ofs);
-    oa << *this;
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << *this;
+    }
 }
 
 void SearchTree::loadFromFile(const String& filePath) {
     // create and open an archive for input
     std::ifstream ifs(filePath.ascii());
-    boost::archive::text_iarchive ia(ifs);
-    // read class state from archive
-    ia >> (*this);
-    // archive and stream closed when destructors are called
+    {
+        boost::archive::text_iarchive ia(ifs);
+        // read class state from archive
+        ia >> (*this);
+        // archive and stream closed when destructors are called
+    }
 }
 
 void SearchTree::print() {
