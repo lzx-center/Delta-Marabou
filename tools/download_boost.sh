@@ -4,10 +4,10 @@ mydir="${0%/*}"
 
 cd $mydir
 
-# TODO: add progress bar, -q is quite, if removing it the progress bar is in
-# multiple lines
-echo "downloading boost"
-wget -q https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.gz/download -O boost_1_68_0.tar.gz
+# # TODO: add progress bar, -q is quite, if removing it the progress bar is in
+# # multiple lines
+# echo "downloading boost"
+# wget -q https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.gz/download -O boost_1_68_0.tar.gz
 echo "unzipping boost"
 tar xzvf boost_1_68_0.tar.gz >> /dev/null
 echo "installing boost"
@@ -18,10 +18,10 @@ if [[ $OSTYPE == 'darwin'* ]]; then
 fi
 
 mkdir installed
-./bootstrap.sh --prefix=`pwd`/installed --with-libraries=program_options,timer,chrono,thread >> /dev/null ;
+./bootstrap.sh --prefix=`pwd`/installed --with-libraries=program_options,timer,chrono,thread,system,serialization >> /dev/null ;
 ./b2 cxxflags=-fPIC link=static install >> /dev/null
 mkdir installed32
-./bootstrap.sh --prefix=`pwd`/installed32 --with-libraries=program_options,timer,chrono,thread >> /dev/null ;
+./bootstrap.sh --prefix=`pwd`/installed32 --with-libraries=program_options,timer,chrono,thread,system,serialization >> /dev/null ;
 ./b2 cxxflags=-fPIC link=static install address-model=32 >> /dev/null
 
 cd $curdir
