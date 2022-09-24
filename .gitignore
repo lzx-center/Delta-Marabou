@@ -1,5 +1,6 @@
 /cmake-build-debug/
 /html/
+build
 Doxygen.config
 tools/OpenBLAS-0.3.19
 tools/pybind11-2.3.0

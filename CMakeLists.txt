@@ -132,9 +132,9 @@ endif()
 
 if (NOT MSVC)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-       set(COMPILE_FLAGS  -Wall -Wextra  -Werror -MMD -Qunused-arguments ) #-Wno-deprecated 
+       set(COMPILE_FLAGS  -Wall -Wextra  -MMD -Qunused-arguments ) #-Wno-deprecated 
      else()
-       set(COMPILE_FLAGS  -Wall -Wextra  -Werror -MMD ) #-Wno-deprecated 
+       set(COMPILE_FLAGS  -Wall -Wextra  -MMD ) #-Wno-deprecated 
     endif()
     set(RELEASE_FLAGS ${COMPILE_FLAGS} -O3) #-Wno-deprecated
 endif()
@@ -167,6 +167,9 @@ elseif (${CMAKE_SIZEOF_VOID_P} EQUAL 4 AND NOT MSVC)
 else()
     set(BOOST_ROOT "${BOOST_DIR}/installed")
 endif()
+
+set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include/")
 
 if (MSVC)
     set(SCRIPT_EXTENSION bat)
