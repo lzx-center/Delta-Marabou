@@ -40,14 +40,7 @@ For more information about the input formats please check the
 
 A guide to Split and Conquer mode is available in [resources/SplitAndConquerGuide.ipynb](resources/SplitAndConquerGuide.ipynb). The Jupyter Notebook gives on overview of SnC's parameters, discusses several runtime examples and a few rules of thumb to choose parameter values.
 
-Research
-------------------------------------------------------------------------------
-More information about publications involving Marabou can be found
-[here](https://neuralnetworkverification.github.io/).
 
-Download
-------------------------------------------------------------------------------
-The latest version of Marabou is available on https://github.com/NeuralNetworkVerification/Marabou.
 
 Build and Dependencies
 ------------------------------------------------------------------------------
@@ -72,16 +65,13 @@ cmake ..
 ```
 For configuring to build a static Marabou binary, use the following flag
 ```
-cmake .. -DBUILD_STATIC_MARABOU=ON
+cmake .. 
 ```
 To build, run the following:
 ```
-cmake --build .
+cmake --build . --target Marabou -j 20
 ```
-To enable multiprocess build change the last command to:
-```
-cmake --build . -j PROC_NUM
-```
+
 To compile in debug mode (default is release)
 ```
 cmake .. -DCMAKE_BUILD_TYPE=Debug
@@ -107,63 +97,6 @@ cd build
 cmake ..
 make check -j PROC_NUM
 ```
-### Build Instructions for Windows using Visual Studio
-
-We no longer provide Windows support. The below instructions apply to commits up
-to [0fc1d10](https://github.com/NeuralNetworkVerification/Marabou/commit/0fc1d10ff0e1859cf32abe54eb22f3ec0fec59f6).
-
-First, install Visual Studio 2017 or later and select the "Desktop development with C++" workload. 
-Ensure that CMake is installed and added to your PATH.
-
-Open a command prompt and run:
-```
-cd path\to\marabou\repo\folder
-mkdir build 
-cd build
-cmake .. -G"Visual Studio 15 2017 Win64"
-cmake --build . --config Release
-```
-This process builds Marabou using the generator "Visual Studio 15 2017 Win64". 
-For 32-bit machines, omit Win64. Other generators and older versions of Visual Studio can likely be used as well, 
-but only "Visual Studio 15 2017 Win64" has been tested.
-
-The Marabou executable file will be written to the build/Release folder. To build in 
-Debug mode, simply run "cmake --build . --config Debug", and the executables will be 
-written to build/Debug.
-
-### Python API
-It may be useful to set up a Python virtual environment, see
-[here](https://docs.python.org/3/tutorial/venv.html) for more information.
-
-The python interface was tested only on versions >3.5 and >2.7. The build process prefers python3 but will work if there is only python 2.7 available. (To control the default change the DEFAULT_PYTHON_VERSION variable).  
-The Python interface requires *pybind11* (which is automatically downloaded). 
-By default Marabou builds also the python API, the BUILD_PYTHON variable
-controls that.
-This process will produce the binary file and the shared library for the Python 
-API. The shared library will be in the maraboupy folder for Linux and MacOS. 
-On Windows, the shared library is written to a Release subfolder in maraboupy, 
-so you will need to move the Release/\*pyd file to the maraboupy folder:
-```
-cd path\to\marabou\repo\folder\maraboupy
-move Release\*pyd .
-```
-
-Export maraboupy folder to Python and Jupyter paths:
-```
-PYTHONPATH=PYTHONPATH:/path/to/marabou/folder
-JUPYTER_PATH=JUPYTER_PATH:/path/to/marabou/folder
-```
-and Marabou is ready to be used from a Python or a Jupyter script. On Windows, 
-edit your environmental variables so PYTHONPATH includes the marabou folder.
-
-#### Troubleshooting
-
-- On Windows - Make sure the detected python ("Found PythonInterp: ....") is a windows python and not cygwin or something like that (if it is cygwin, use -DPYTHON_EXECUTABLE flag to override the default python, or manuialy download the linux pybind and locate it in the tools directory)
-
-- 32bit Python - By default we install a 64bit Marabou and consequently a 64bit
-  python interface, the maraboupy/build_python_x86.sh file builds a 32bit
-  version.
-
 
 
 Getting Started
@@ -177,15 +110,7 @@ To run Marabou, execute from the repo directory, for example:
 ```
 ./build/Marabou resources/nnet/acasxu/ACASXU_experimental_v2a_2_7.nnet resources/properties/acas_property_3.txt
 ```
-on Linux or MacOS, or 
-```
-build\Release\Marabou.exe resources\nnet\acasxu\ACASXU_experimental_v2a_2_7.nnet resources\properties\acas_property_3.txt
-```
-on Windows.
-
-### Using Python interface 
-Please see our [documentation](https://neuralnetworkverification.github.io/Marabou/)
-for the python interface, which contains examples, API documentation, and a developer's guide.
+on Linux or MacOS
 
 ### Using the run script (*Recommended*)
 For ease of use, we also provide a example python script (resources/runMarabou.py). The script can take the same arguments
