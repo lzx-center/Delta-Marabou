@@ -40,6 +40,7 @@ public:
     bool isLeaf();
     String getStringPlType() const;
     String getStringNodeType() const;
+    NodeType getNodeType();
     static String getTypeString(PiecewiseLinearFunctionType type);
     void print();
 private:
@@ -64,6 +65,11 @@ public:
         VERIFIED_UNSAT,
         NOT_VERIFIED
     };
+    enum DirectionType {
+        LEFT = 0,
+        RIGHT,
+        CANT_JUDGE
+    };
 private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
@@ -81,6 +87,8 @@ private:
 
 public:
     SearchTree();
+
+
     SearchTreeNode& getNode(int index);
 
     size_t size();
@@ -90,6 +98,8 @@ public:
     void setVerifiedResult(ResultTYpe resultTYpe);
 
     void markSatLeaf(const Set<unsigned>& varSet);
+
+    SearchTreeNode& getCurrentNode();
 
     size_t newNode();
 
@@ -104,6 +114,11 @@ public:
     int getCurrentIndex();
 
     void processCaseSplit(PiecewiseLinearCaseSplit* split);
+    /*
+     * 0 : for left
+     * 1 : for right
+     */
+    DirectionType getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists);
 
     void setNodeInfo(PiecewiseLinearConstraint* pLConstraint);
 

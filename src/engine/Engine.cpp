@@ -413,10 +413,13 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         printf( "\n---\n" );
     }
 
-    _smtCore._preSearchTree.print();
+    _smtCore._preSearchTree.setCurrent(0);
     if (timeoutInSeconds > 2) {
         printf("haha\n");
     }
+
+
+
 //    bool splitJustPerformed = true;
 //    struct timespec mainLoopStart = TimeUtils::sampleMicro();
 //    while ( true )

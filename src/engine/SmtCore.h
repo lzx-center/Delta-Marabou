@@ -189,6 +189,11 @@ private:
     List<SmtStackEntry *> _stack;
 
     /*
+     * map stack entry to node index
+     */
+    Map<SmtStackEntry *, unsigned> _stackToTreeNodeIndex;
+
+    /*
       The engine.
     */
     IEngine *_engine;

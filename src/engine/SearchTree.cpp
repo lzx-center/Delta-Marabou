@@ -22,7 +22,7 @@ SearchTreeNode &SearchTree::getNode(int index) {
     return _nodes[index];
 }
 
-void SearchTree::saveToFile(const String& filePath) const {
+void SearchTree::saveToFile(const String &filePath) const {
     std::ofstream ofs(filePath.ascii());
     {
         boost::archive::text_oarchive oa(ofs);
@@ -30,7 +30,7 @@ void SearchTree::saveToFile(const String& filePath) const {
     }
 }
 
-void SearchTree::loadFromFile(const String& filePath) {
+void SearchTree::loadFromFile(const String &filePath) {
     // create and open an archive for input
     std::ifstream ifs(filePath.ascii());
     {
@@ -42,7 +42,7 @@ void SearchTree::loadFromFile(const String& filePath) {
 }
 
 void SearchTree::print() {
-    for (auto n : _nodes) {
+    for (auto n: _nodes) {
         n.print();
     }
     printf("Verified result: %s\n", getStringResultType().ascii());
@@ -51,30 +51,14 @@ void SearchTree::print() {
 
 void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     int nodeIndex = newNode();
-    auto &node  = _nodes[nodeIndex];
+    auto &node = _nodes[nodeIndex];
     node._preNode = _mapSplitToNode[{split->_layer, split->_node}];
     auto &preNode = _nodes[node._preNode];
-    auto& tightenLists = split->getBoundTightenings();
-    if (preNode.getType() == RELU) {
-        bool inActive = true;
-        for (auto tighten : tightenLists) {
-            if (tighten._type != Tightening::UB) {
-                inActive = false;
-                break;
-            }
-        }
-        if (inActive) {
-            preNode._left = nodeIndex;
-        } else {
-            preNode._right = nodeIndex;
-        }
-    } else if (preNode.getType() == DISJUNCTION) {
-        assert(tightenLists.size() == 1 && "tighten size is not equal to 1");
-        if (tightenLists.begin()->_type == Tightening::UB) {
-            preNode._left = nodeIndex;
-        } else {
-            preNode._right = nodeIndex;
-        }
+    auto direction = getDirection(preNode.getType(), split->getBoundTightenings());
+    if (direction == LEFT) {
+        preNode._left = nodeIndex;
+    } else if (direction == RIGHT) {
+        preNode._right = nodeIndex;
     } else {
         printf("current node:%d, type: %s\n", _current, preNode.getStringPlType().ascii());
         assert(false && "can not handle such constraint type");
@@ -83,7 +67,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
 }
 
 void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
-    auto& node = _nodes[_current];
+    auto &node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
     node.setType(pLConstraint->getType());
     _mapSplitToNode[{node._plLayer, node._plNode}] = _current;
@@ -93,13 +77,13 @@ int SearchTree::getCurrentIndex() {
     return _current;
 }
 
-void SearchTree::markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict) {
+void SearchTree::markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict) {
     auto &node = _nodes[_current];
     assert(node._plType == UNKNOWN);
     _resultType = VERIFIED_SAT;
     node._nodeType = SearchTreeNode::UNSAT;
     node._basicVariables.reserve(varSet.size());
-    for (auto var : varSet) {
+    for (auto var: varSet) {
         node._basicVariables.push_back(var);
     }
     node._conflictVariable = conflict;
@@ -112,7 +96,7 @@ size_t SearchTree::size() {
 void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
     auto &node = _nodes[_current];
     node._nodeType = SearchTreeNode::SAT;
-    for (auto var : varSet) {
+    for (auto var: varSet) {
         node._basicVariables.push_back(var);
     }
     std::vector<unsigned> stack;
@@ -122,7 +106,7 @@ void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
         current = _nodes[current]._preNode;
     }
     node._satisfyPath.reserve(stack.size());
-    for (auto it = stack.rbegin(); it != stack.rend(); ++ it) {
+    for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
         node._satisfyPath.push_back(*it);
     }
 }
@@ -148,15 +132,43 @@ String SearchTree::getStringResultType() {
     return s;
 }
 
+SearchTreeNode &SearchTree::getCurrentNode() {
+    return _nodes[_current];
+}
+
+SearchTree::DirectionType
+SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists) {
+    if (type == RELU) {
+        bool inActive = true;
+        for (auto tighten: tightenLists) {
+            if (tighten._type != Tightening::UB) {
+                inActive = false;
+                break;
+            }
+        }
+        if (inActive) {
+            return LEFT; // left
+        }
+        return RIGHT; //right
+    } else if (type == DISJUNCTION) {
+        assert(tightenLists.size() == 1 && "tighten size is not equal to 1");
+        if (tightenLists.begin()->_type == Tightening::UB) {
+            return LEFT; // left
+        }
+        return RIGHT; // right
+    }
+    return CANT_JUDGE;
+}
+
 
 void SearchTreeNode::print() {
     printf(
             "Tree node id: %d, node type: %s\n",
             _id, getStringNodeType().ascii()
-            );
+    );
     if (_nodeType == PATH_NODE) {
         printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
-               _plLayer, _plNode,getStringPlType().ascii(), _left, _right, _preNode
+               _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
         );
     }
     if (_nodeType == UNSAT) {
@@ -164,15 +176,15 @@ void SearchTreeNode::print() {
     }
     if (!_basicVariables.empty()) {
         printf("Basic variables: ");
-        for (auto v : _basicVariables) {
-            printf("%d ",v);
+        for (auto v: _basicVariables) {
+            printf("%d ", v);
         }
         printf("\n");
     }
     if (_nodeType == SAT) {
         printf("Satisfy path: ");
-        for (size_t i = 0; i < _satisfyPath.size(); ++ i) {
-            printf( i == _satisfyPath.size() - 1 ? "%d\n": "%d -> ", _satisfyPath[i]);
+        for (size_t i = 0; i < _satisfyPath.size(); ++i) {
+            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d -> ", _satisfyPath[i]);
         }
     }
     printf("\n");
@@ -239,4 +251,8 @@ String SearchTreeNode::getStringNodeType() const {
             break;
     }
     return s;
+}
+
+SearchTreeNode::NodeType SearchTreeNode::getNodeType() {
+    return _nodeType;
 }
