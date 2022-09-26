@@ -294,7 +294,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
                         _statistics.print();
                     }
                     auto varSet = _tableau->getBasicVariables();
-                    _smtCore.searchTree.markSatLeaf(varSet);
+                    _smtCore._searchTree.markSatLeaf(varSet);
                     _exitCode = Engine::SAT;
 
                     return true;
@@ -336,7 +336,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
         {
             _tableau->toggleOptimization( false );
             if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-                _smtCore.searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+                _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             }
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
@@ -2671,7 +2671,7 @@ bool Engine::restoreSmtState( SmtState & smtState )
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
         if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            _smtCore.searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+            _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
         }
         if ( !_smtCore.popSplit())
         {
@@ -3112,31 +3112,27 @@ unsigned Engine::getInconsistentVariable() {
 }
 
 SearchTree &Engine::getSearchTree() {
-    return _smtCore.searchTree;
+    return _smtCore._searchTree;
 }
 
 void Engine::renameVariableInSearchTree() {
-    auto size = _smtCore.searchTree.size();
+    auto size = _smtCore._searchTree.size();
     for (size_t i = 0; i < size; ++ i) {
-        auto& node = _smtCore.searchTree.getNode(size);
-        if (node._nodeType == SearchTreeNode::UNSAT) {
-            node._conflictVariable = _preprocessor.getOldIndex(node._conflictVariable);
-            for (auto &v : node._basicVariables) {
-                v = _preprocessor.getOldIndex(v);
-            }
+        auto& node = _smtCore._searchTree.getNode(i);
+        node._conflictVariable = _preprocessor.getOldIndex(node._conflictVariable);
+        for (auto &v : node._basicVariables) {
+            v = _preprocessor.getOldIndex(v);
         }
     }
 }
 
 void Engine::renameSearchTreeVariableInIncrementalProcess() {
-    auto size = _smtCore.searchTree.size();
+    auto size = _smtCore._searchTree.size();
     for (size_t i = 0; i < size; ++ i) {
-        auto& node = _smtCore.searchTree.getNode(size);
-        if (node._nodeType == SearchTreeNode::UNSAT) {
-            node._conflictVariable = _preprocessor.getNewIndex(node._conflictVariable);
-            for (auto &v : node._basicVariables) {
-                v = _preprocessor.getNewIndex(v);
-            }
+        auto& node = _smtCore._searchTree.getNode(i);
+        node._conflictVariable = _preprocessor.getNewIndex(node._conflictVariable);
+        for (auto &v : node._basicVariables) {
+            v = _preprocessor.getNewIndex(v);
         }
     }
 }

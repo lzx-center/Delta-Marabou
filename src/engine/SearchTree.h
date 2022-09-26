@@ -58,18 +58,24 @@ private:
 };
 
 class SearchTree {
+public:
+    enum ResultTYpe {
+        VERIFIED_SAT = 0,
+        VERIFIED_UNSAT,
+        NOT_VERIFIED
+    };
 private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
     std::map<std::pair<int, int>, int> _mapSplitToNode;
-
+    ResultTYpe _resultType;
 
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _root & _current & _nodes;
+            ar & _root & _current & _nodes & _resultType;
         }
     }
 
@@ -80,6 +86,8 @@ public:
     size_t size();
 
     void markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict);
+
+    void setVerifiedResult(ResultTYpe resultTYpe);
 
     void markSatLeaf(const Set<unsigned>& varSet);
 
@@ -98,6 +106,8 @@ public:
     void processCaseSplit(PiecewiseLinearCaseSplit* split);
 
     void setNodeInfo(PiecewiseLinearConstraint* pLConstraint);
+
+    String getStringResultType();
 
     void print();
 };

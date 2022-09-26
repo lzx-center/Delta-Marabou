@@ -13,7 +13,7 @@ size_t SearchTree::newNode() {
     return size;
 }
 
-SearchTree::SearchTree() : _root(-1), _current(-1) {
+SearchTree::SearchTree() : _root(-1), _current(-1), _resultType(NOT_VERIFIED) {
     auto index = newNode();
     _root = _current = index;
 }
@@ -45,6 +45,7 @@ void SearchTree::print() {
     for (auto n : _nodes) {
         n.print();
     }
+    printf("Verified result: %s\n", getStringResultType().ascii());
 }
 
 
@@ -95,6 +96,7 @@ int SearchTree::getCurrentIndex() {
 void SearchTree::markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict) {
     auto &node = _nodes[_current];
     assert(node._plType == UNKNOWN);
+    _resultType = VERIFIED_SAT;
     node._nodeType = SearchTreeNode::UNSAT;
     node._basicVariables.reserve(varSet.size());
     for (auto var : varSet) {
@@ -123,6 +125,27 @@ void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
     for (auto it = stack.rbegin(); it != stack.rend(); ++ it) {
         node._satisfyPath.push_back(*it);
     }
+}
+
+void SearchTree::setVerifiedResult(SearchTree::ResultTYpe resultTYpe) {
+    _resultType = resultTYpe;
+}
+
+String SearchTree::getStringResultType() {
+    String s;
+    switch (_resultType) {
+
+        case VERIFIED_SAT:
+            s = "sat";
+            break;
+        case VERIFIED_UNSAT:
+            s = "unsat";
+            break;
+        case NOT_VERIFIED:
+            s = "not verified";
+            break;
+    }
+    return s;
 }
 
 

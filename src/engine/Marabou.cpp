@@ -183,11 +183,14 @@ void Marabou::solveQuery()
         _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
 
     _engine.renameVariableInSearchTree();
-    saveSearchTree();
-    _engine.getSearchTree().print();
-
-    if ( _engine.getExitCode() == Engine::SAT )
+    if (_engine.getExitCode() == Engine::UNSAT) {
+        _engine.getSearchTree().setVerifiedResult(SearchTree::VERIFIED_UNSAT);
+    } else if ( _engine.getExitCode() == Engine::SAT ) {
         _engine.extractSolution( _inputQuery );
+        _engine.getSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
+    }
+    _engine.getSearchTree().print();
+    saveSearchTree();
 }
 
 void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
@@ -286,8 +289,8 @@ void Marabou::incrementalRun() {
     printf("hahah");
     loadSearchTree();
     _engine.renameSearchTreeVariableInIncrementalProcess();
-//    auto& searchTree = _engine.getSearchTree();
-//    searchTree.print();
+//    auto& _searchTree = _engine.getSearchTree();
+//    _searchTree.print();
 //    prepareInputQuery();
 //    solveQuery();
 //
@@ -324,7 +327,7 @@ void Marabou::saveSearchTree() {
     }
     else {
         String networkFilePath = Options::get()->getString( Options::INPUT_FILE_PATH );
-        String networkSearchTree = networkFilePath + String(".searchTree");
+        String networkSearchTree = networkFilePath + String("._searchTree");
         auto& searchTree = _engine.getSearchTree();
         searchTree.saveToFile(networkSearchTree);
     }
