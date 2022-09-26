@@ -184,6 +184,7 @@ void Marabou::solveQuery()
 
     _engine.renameVariableInSearchTree();
     saveSearchTree();
+    _engine.getSearchTree().print();
 
     if ( _engine.getExitCode() == Engine::SAT )
         _engine.extractSolution( _inputQuery );

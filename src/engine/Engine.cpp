@@ -333,7 +333,9 @@ bool Engine::solve( unsigned timeoutInSeconds )
         catch ( const InfeasibleQueryException & )
         {
             _tableau->toggleOptimization( false );
-            _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+            if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+                _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+            }
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
             if ( !_smtCore.popSplit())
@@ -2666,7 +2668,9 @@ bool Engine::restoreSmtState( SmtState & smtState )
     {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
-        _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+        if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            _smtCore.searchTree.markLeaf(getBasicVariable(), getInconsistentVariable());
+        }
         if ( !_smtCore.popSplit())
         {
             if ( _verbosity > 0 )
