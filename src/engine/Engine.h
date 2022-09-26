@@ -76,7 +76,7 @@ public:
       (a timeout of 0 means no time limit). Returns true if found, false if infeasible.
     */
     bool solve( unsigned timeoutInSeconds = 0 );
-
+    bool incrementalSolve( unsigned timeoutInSeconds = 0);
     /*
       Minimize the cost function with respect to the current set of linear constraints.
     */
@@ -184,6 +184,8 @@ public:
     */
     void storeSmtState( SmtState &smtState );
 
+    SearchTree& getCurrentSearchTree();
+    SearchTree& getPreSearchTree();
     /*
       Pick the piecewise linear constraint for splitting
     */
@@ -226,6 +228,10 @@ public:
     bool applyAllValidConstraintCaseSplits();
 
     void setRandomSeed( unsigned seed );
+
+    void renameVariableInSearchTree();
+
+    void renameSearchTreeVariableInIncrementalProcess();
 
 private:
 

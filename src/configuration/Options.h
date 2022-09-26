@@ -139,6 +139,8 @@ public:
         // The procedure/solver for solving the LP
         LP_SOLVER,
 
+        SEARCH_TREE_FILE_PATH,
+
     };
 
     /*

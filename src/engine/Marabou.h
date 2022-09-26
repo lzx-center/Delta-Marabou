@@ -31,6 +31,12 @@ public:
     */
     void run();
 
+    void incrementalRun();
+
+    void loadPreSearchTree(String path="");
+
+    void saveSearchTree(String path="");
+
 private:
     InputQuery _inputQuery;
 
@@ -45,7 +51,6 @@ private:
       Invoke the engine to solve the input query
     */
     void solveQuery();
-
     /*
       Display the results
     */

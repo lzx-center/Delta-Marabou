@@ -832,7 +832,10 @@ void Preprocessor::eliminateVariables()
             ++offset;
         }
         else
+        {
             _oldIndexToNewIndex[i] = i - offset;
+            _newIndexToOldIndex[i - offset] = i;
+        }
     }
 
     // Next, eliminate the fixed variables from the equations
@@ -891,8 +894,10 @@ void Preprocessor::eliminateVariables()
         List<unsigned> participatingVariables = (*constraint)->getParticipatingVariables();
         for ( unsigned variable : participatingVariables )
         {
-            if ( _fixedVariables.exists( variable ) )
+            if ( _fixedVariables.exists( variable ) ) {
                 (*constraint)->eliminateVariable( variable, _fixedVariables.at( variable ) );
+            }
+
         }
 
         if ( (*constraint)->constraintObsolete() )
@@ -904,6 +909,10 @@ void Preprocessor::eliminateVariables()
             if ( _preprocessed->_networkLevelReasoner )
                 _preprocessed->_networkLevelReasoner->
                     removeConstraintFromTopologicalOrder( *constraint );
+            if ((*constraint)->getType() == RELU) {
+                auto copyConstraint = (*constraint)->duplicateConstraint();
+                _eliminateConstraint[copyConstraint->getPosition()] = copyConstraint;
+            }
             delete *constraint;
             *constraint = NULL;
             constraint = constraints.erase( constraint );
@@ -1059,6 +1068,12 @@ void Preprocessor::dumpAllBounds( const String &message )
     }
 
     printf( "\n" );
+}
+
+unsigned Preprocessor::getOldIndex(unsigned int newIndex) const {
+    if (_newIndexToOldIndex.exists(newIndex))
+        return _newIndexToOldIndex.at(newIndex);
+    return newIndex;
 }
 
 //

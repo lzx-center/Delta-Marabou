@@ -57,6 +57,8 @@ public:
     */
     unsigned getNewIndex( unsigned oldIndex ) const;
 
+    unsigned getOldIndex( unsigned newIndex) const;
+
 private:
 
     void freeMemoryIfNeeded();
@@ -165,11 +167,13 @@ private:
     */
     Map<unsigned, unsigned> _mergedVariables;
 
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint* > _eliminateConstraint;
     /*
       Mapping of old variable indices to new varibale indices, if
       indices were changed during preprocessing.
     */
     Map<unsigned, unsigned> _oldIndexToNewIndex;
+    Map<unsigned, unsigned> _newIndexToOldIndex;
 
     /*
       For debugging only

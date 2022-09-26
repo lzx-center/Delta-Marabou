@@ -42,7 +42,7 @@ class SmtCore
 public:
     SmtCore( IEngine *engine );
     ~SmtCore();
-    SearchTree searchTree;
+    SearchTree _searchTree, _preSearchTree;
 
     /*
       Clear the stack.
@@ -176,7 +176,6 @@ private:
     /*
       Valid splits that were implied by level 0 of the stack.
     */
-
     List<PiecewiseLinearCaseSplit> _impliedValidSplitsAtRoot;
 
     /*
@@ -188,6 +187,11 @@ private:
       The case-split stack.
     */
     List<SmtStackEntry *> _stack;
+
+    /*
+     * map stack entry to node index
+     */
+    Map<SmtStackEntry *, unsigned> _stackToTreeNodeIndex;
 
     /*
       The engine.

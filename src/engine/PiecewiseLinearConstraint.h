@@ -116,7 +116,14 @@ public:
     // struct for indentify where the constraint is
     struct Position {
         unsigned _layer, _node;
-        Position(unsigned layer=0, unsigned node=0) : _layer(layer), _node(node) {}
+        explicit Position(unsigned layer=0, unsigned node=0) : _layer(layer), _node(node) {}
+
+        bool operator < (const Position& b) const{
+            if (_layer == b._layer) {
+                return _node == b._node;
+            }
+            return _layer > b._layer;
+        }
     };
 
     PiecewiseLinearConstraint();

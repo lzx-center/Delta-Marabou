@@ -209,6 +209,14 @@ public:
     CVC4::context::Context &getContext() { return _dontCare; }
 
     bool consistentBounds() const { return true; }
+
+    Set<unsigned> getBasicVariable() {
+        return Set<unsigned>();
+    }
+
+    unsigned getInconsistentVariable() {
+        return 0;
+    }
 };
 
 #endif // __MockEngine_h__
