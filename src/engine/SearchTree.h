@@ -14,11 +14,15 @@
 
 struct SearchTreeNode {
 public:
-    explicit SearchTreeNode(int id = 0, bool isLeaf = false) : _id(id), _isLeaf(isLeaf), _conflictVariable(-1), _left(-1),
-                                                      _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1),_type(UNKNOWN) {}
-
+    enum NodeType {
+        SAT = 0,
+        UNSAT,
+        PATH_NODE
+    };
+    explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
+                                                               _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN) {}
     int _id;
-    bool _isLeaf;
+    NodeType _nodeType;
     int _conflictVariable;
     // left represent:
     //     inactive in Relu
@@ -27,14 +31,15 @@ public:
     int _left, _right;
     int _preNode, _plLayer, _plNode;
     std::vector<unsigned> _basicVariables;
-    PiecewiseLinearFunctionType _type;
+    std::vector<unsigned > _satisfyPath;
+    PiecewiseLinearFunctionType _plType;
 
     void setPosition(PiecewiseLinearConstraint::Position &position);
     void setType(PiecewiseLinearFunctionType type);
     PiecewiseLinearFunctionType getType();
-    void markAsLeaf();
     bool isLeaf();
-    String getStringType() const;
+    String getStringPlType() const;
+    String getStringNodeType() const;
     static String getTypeString(PiecewiseLinearFunctionType type);
     void print();
 private:
@@ -46,7 +51,8 @@ private:
         // serialize base class information
         if (version >= 0) {
             ar & _plLayer & _plNode & _conflictVariable;
-            ar & _left & _right & _preNode  & _id  & _isLeaf & _basicVariables & _type;
+            ar & _left & _right & _preNode & _id & _nodeType & _basicVariables & _plType;
+            ar & _satisfyPath;
         }
     }
 };
@@ -73,7 +79,9 @@ public:
 
     size_t size();
 
-    void markLeaf(const Set<unsigned>& varSet, unsigned conflict);
+    void markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict);
+
+    void markSatLeaf(const Set<unsigned>& varSet);
 
     size_t newNode();
 

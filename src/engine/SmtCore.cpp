@@ -295,7 +295,7 @@ bool SmtCore::popSplit()
         inconsistent = !_engine->consistentBounds();
         if (inconsistent) {
             if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-                searchTree.markLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
+                searchTree.markUnsatLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
             }
         }
     }

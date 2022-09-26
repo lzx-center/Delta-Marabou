@@ -75,7 +75,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
             preNode._right = nodeIndex;
         }
     } else {
-        printf("current node:%d, type: %s\n", _current, preNode.getStringType().ascii());
+        printf("current node:%d, type: %s\n", _current, preNode.getStringPlType().ascii());
         assert(false && "can not handle such constraint type");
     }
     setCurrent(nodeIndex);
@@ -92,10 +92,10 @@ int SearchTree::getCurrentIndex() {
     return _current;
 }
 
-void SearchTree::markLeaf(const Set<unsigned>& varSet, unsigned conflict) {
+void SearchTree::markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict) {
     auto &node = _nodes[_current];
-    assert(node._type == UNKNOWN);
-    node._isLeaf = true;
+    assert(node._plType == UNKNOWN);
+    node._nodeType = SearchTreeNode::UNSAT;
     node._basicVariables.reserve(varSet.size());
     for (auto var : varSet) {
         node._basicVariables.push_back(var);
@@ -107,21 +107,50 @@ size_t SearchTree::size() {
     return _nodes.size();
 }
 
+void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
+    auto &node = _nodes[_current];
+    node._nodeType = SearchTreeNode::SAT;
+    for (auto var : varSet) {
+        node._basicVariables.push_back(var);
+    }
+    std::vector<unsigned> stack;
+    int current = node._id;
+    while (current != -1) {
+        stack.push_back(current);
+        current = _nodes[current]._preNode;
+    }
+    node._satisfyPath.reserve(stack.size());
+    for (auto it = stack.rbegin(); it != stack.rend(); ++ it) {
+        node._satisfyPath.push_back(*it);
+    }
+}
+
 
 void SearchTreeNode::print() {
     printf(
-            "Tree node id: %d, is leaf node: %s\nConstraint position is (%d, %d)\nleft node: %d, right node: %d, pre-node: %d\n",
-            _id, _isLeaf ? "true" : "false", _plLayer, _plNode, _right, _left, _preNode
-    );
-    String s = getStringType();
-    printf("Node type: %s\n", s.ascii());
-    printf("Conflict variable: %d\n", _conflictVariable);
+            "Tree node id: %d, node type: %s\n",
+            _id, getStringNodeType().ascii()
+            );
+    if (_nodeType == PATH_NODE) {
+        printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
+               _plLayer, _plNode,getStringPlType().ascii(), _left, _right, _preNode
+        );
+    }
+    if (_nodeType == UNSAT) {
+        printf("Conflict variable: %d\n", _conflictVariable);
+    }
     if (!_basicVariables.empty()) {
         printf("Basic variables: ");
         for (auto v : _basicVariables) {
             printf("%d ",v);
         }
         printf("\n");
+    }
+    if (_nodeType == SAT) {
+        printf("Satisfy path: ");
+        for (size_t i = 0; i < _satisfyPath.size(); ++ i) {
+            printf( i == _satisfyPath.size() - 1 ? "%d\n": "%d -> ", _satisfyPath[i]);
+        }
     }
     printf("\n");
 }
@@ -131,24 +160,21 @@ void SearchTreeNode::setPosition(PiecewiseLinearConstraint::Position &position) 
     _plNode = position._node;
 }
 
-void SearchTreeNode::markAsLeaf() {
-    _isLeaf = true;
-}
 
 bool SearchTreeNode::isLeaf() {
-    return _isLeaf;
+    return _nodeType == SAT or _nodeType == UNSAT;
 }
 
 void SearchTreeNode::setType(PiecewiseLinearFunctionType type) {
-    _type = type;
+    _plType = type;
 }
 
 PiecewiseLinearFunctionType SearchTreeNode::getType() {
-    return _type;
+    return _plType;
 }
 
-String SearchTreeNode::getStringType() const {
-    return getTypeString(_type);
+String SearchTreeNode::getStringPlType() const {
+    return getTypeString(_plType);
 }
 
 String SearchTreeNode::getTypeString(PiecewiseLinearFunctionType type) {
@@ -171,6 +197,22 @@ String SearchTreeNode::getTypeString(PiecewiseLinearFunctionType type) {
             break;
         case UNKNOWN:
             s = "Unknown";
+            break;
+    }
+    return s;
+}
+
+String SearchTreeNode::getStringNodeType() const {
+    String s;
+    switch (_nodeType) {
+        case SAT:
+            s = "sat";
+            break;
+        case UNSAT:
+            s = "unsat";
+            break;
+        case PATH_NODE:
+            s = "path_node";
             break;
     }
     return s;
