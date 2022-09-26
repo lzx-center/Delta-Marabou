@@ -42,7 +42,7 @@ class SmtCore
 public:
     SmtCore( IEngine *engine );
     ~SmtCore();
-    SearchTree _searchTree;
+    SearchTree _searchTree, _preSearchTree;
 
     /*
       Clear the stack.

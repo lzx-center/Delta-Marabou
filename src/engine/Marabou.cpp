@@ -179,18 +179,23 @@ void Marabou::exportAssignment() const
 
 void Marabou::solveQuery()
 {
-    if ( _engine.processInputQuery( _inputQuery ) )
-        _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
+    if ( _engine.processInputQuery( _inputQuery ) ) {
+        if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            _engine.incrementalSolve(Options::get()->getInt( Options::TIMEOUT ));
+        } else {
+            _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
+        }
+    }
 
     _engine.renameVariableInSearchTree();
     if (_engine.getExitCode() == Engine::UNSAT) {
-        _engine.getSearchTree().setVerifiedResult(SearchTree::VERIFIED_UNSAT);
+        _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_UNSAT);
     } else if ( _engine.getExitCode() == Engine::SAT ) {
         _engine.extractSolution( _inputQuery );
-        _engine.getSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
+        _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
     }
-    _engine.getSearchTree().print();
-    saveSearchTree();
+    _engine.getCurrentSearchTree().print();
+    saveSearchTree("");
 }
 
 void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
@@ -285,52 +290,42 @@ void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
 }
 
 void Marabou::incrementalRun() {
-//    struct timespec start = TimeUtils::sampleMicro();
-    printf("hahah");
-    loadSearchTree();
+    loadPreSearchTree("");
+    struct timespec start = TimeUtils::sampleMicro();
     _engine.renameSearchTreeVariableInIncrementalProcess();
-//    auto& _searchTree = _engine.getSearchTree();
-//    _searchTree.print();
-//    prepareInputQuery();
-//    solveQuery();
-//
-//    struct timespec end = TimeUtils::sampleMicro();
-//
-//    unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
-//    displayResults( totalElapsed );
-//
-//    if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
-//        exportAssignment();
+    auto& _searchTree = _engine.getPreSearchTree();
+    _searchTree.print();
+    prepareInputQuery();
+    solveQuery();
+
+    struct timespec end = TimeUtils::sampleMicro();
+
+    unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
+    displayResults( totalElapsed );
+
+    if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
+        exportAssignment();
 }
 
-void Marabou::loadSearchTree() {
-    String inputQueryFilePath = Options::get()->getString( Options::INPUT_QUERY_FILE_PATH );
-    if ( inputQueryFilePath.length() > 0 ) {
-        assert(false && "can not handle query yet");
+void Marabou::loadPreSearchTree(String path) {
+    String networkSearchTree = path.length() ? path : Options::get()->getString( Options::SEARCH_TREE_FILE_PATH );
+    if (!File::exists(networkSearchTree)) {
+        printf( "Error: the specified network seach tree file (%s) doesn't exist!\n", networkSearchTree.ascii() );
+        throw MarabouError( MarabouError::FILE_DOESNT_EXIST, networkSearchTree.ascii() );
     }
-    else {
-        String networkSearchTree = Options::get()->getString( Options::SEARCH_TREE_FILE_PATH );
-        if (!File::exists(networkSearchTree)) {
-            printf( "Error: the specified network seach tree file (%s) doesn't exist!\n", networkSearchTree.ascii() );
-            throw MarabouError( MarabouError::FILE_DOESNT_EXIST, networkSearchTree.ascii() );
-        }
-        auto& searchTree = _engine.getSearchTree();
-        searchTree.loadFromFile(networkSearchTree);
-    }
+    auto& searchTree = _engine.getPreSearchTree();
+    searchTree.loadFromFile(networkSearchTree);
 
 }
 
-void Marabou::saveSearchTree() {
-    String inputQueryFilePath = Options::get()->getString( Options::INPUT_QUERY_FILE_PATH );
-    if ( inputQueryFilePath.length() > 0 ) {
-        assert(false && "can not handle query yet");
+void Marabou::saveSearchTree(String path) {
+    String networkFilePath = path.length() ? path : Options::get()->getString( Options::INPUT_FILE_PATH );
+    String networkSearchTree = networkFilePath + String(".searchTree");
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+        networkSearchTree += String(".incremental");
     }
-    else {
-        String networkFilePath = Options::get()->getString( Options::INPUT_FILE_PATH );
-        String networkSearchTree = networkFilePath + String("._searchTree");
-        auto& searchTree = _engine.getSearchTree();
-        searchTree.saveToFile(networkSearchTree);
-    }
+    auto& searchTree = _engine.getCurrentSearchTree();
+    searchTree.saveToFile(networkSearchTree);
 }
 //
 // Local Variables:

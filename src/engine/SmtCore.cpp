@@ -159,9 +159,9 @@ void SmtCore::performSplit()
     //   1. Obtain the splits.
     //   2. Disable the constraint, so that it is marked as disbaled in the EngineState.
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
-    if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-        _searchTree.setNodeInfo(_constraintForSplitting);
-    }
+
+    _searchTree.setNodeInfo(_constraintForSplitting);
+
     ASSERT( !splits.empty() );
     ASSERT( splits.size() >= 2 ); // Not really necessary, can add code to handle this case.
     _constraintForSplitting->setActiveConstraint( false );
@@ -180,9 +180,9 @@ void SmtCore::performSplit()
     ASSERT( split->getEquations().size() == 0 );
     _engine->applySplit( *split );
     stackEntry->_activeSplit = *split;
-    if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-        _searchTree.processCaseSplit(&(*split));
-    }
+
+    _searchTree.processCaseSplit(&(*split));
+
     // Store the remaining splits on the stack, for later
     stackEntry->_engineState = stateBeforeSplits;
     ++split;
@@ -284,9 +284,9 @@ bool SmtCore::popSplit()
         _engine->preContextPushHook();
         _context.push();
         _engine->applySplit( *split );
-        if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            _searchTree.processCaseSplit(&(*split));
-        }
+
+        _searchTree.processCaseSplit(&(*split));
+
         SMT_LOG( "\tApplying new split - DONE" );
 
         stackEntry->_activeSplit = *split;
@@ -294,9 +294,7 @@ bool SmtCore::popSplit()
 
         inconsistent = !_engine->consistentBounds();
         if (inconsistent) {
-            if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-                _searchTree.markUnsatLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
-            }
+            _searchTree.markUnsatLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
         }
     }
 

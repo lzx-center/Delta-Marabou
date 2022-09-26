@@ -393,6 +393,235 @@ bool Engine::solve( unsigned timeoutInSeconds )
     }
 }
 
+bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
+    SignalHandler::getInstance()->initialize();
+    SignalHandler::getInstance()->registerClient( this );
+
+    // Register the boundManager with all the PL constraints
+    for ( auto &plConstraint : _plConstraints ) {
+        plConstraint->registerBoundManager( &_boundManager );
+    }
+
+    updateDirections();
+
+    storeInitialEngineState();
+    mainLoopStatistics();
+    if ( _verbosity > 0 )
+    {
+        printf( "\nEngine::solve: Initial statistics\n" );
+        _statistics.print();
+        printf( "\n---\n" );
+    }
+
+    _smtCore._preSearchTree.print();
+    if (timeoutInSeconds > 2) {
+        printf("haha\n");
+    }
+//    bool splitJustPerformed = true;
+//    struct timespec mainLoopStart = TimeUtils::sampleMicro();
+//    while ( true )
+//    {
+//        struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//        _statistics.incLongAttribute( Statistics::TIME_MAIN_LOOP_MICRO,
+//                                      TimeUtils::timePassed( mainLoopStart,
+//                                                             mainLoopEnd ) );
+//        mainLoopStart = mainLoopEnd;
+//
+//        if ( shouldExitDueToTimeout( timeoutInSeconds ) )
+//        {
+//            if ( _verbosity > 0 )
+//            {
+//                printf( "\n\nEngine: quitting due to timeout...\n\n" );
+//                printf( "Final statistics:\n" );
+//                _statistics.print();
+//            }
+//
+//            _exitCode = Engine::TIMEOUT;
+//            _statistics.timeout();
+//            return false;
+//        }
+//
+//        if ( _quitRequested )
+//        {
+//            if ( _verbosity > 0 )
+//            {
+//                printf( "\n\nEngine: quitting due to external request...\n\n" );
+//                printf( "Final statistics:\n" );
+//                _statistics.print();
+//            }
+//
+//            _exitCode = Engine::QUIT_REQUESTED;
+//            return false;
+//        }
+//
+//        try
+//        {
+//            DEBUG( _tableau->verifyInvariants() );
+//
+//            mainLoopStatistics();
+//            if ( _verbosity > 1 &&
+//                 _statistics.getLongAttribute
+//                         ( Statistics::NUM_MAIN_LOOP_ITERATIONS ) %
+//                 _statisticsPrintingFrequency == 0 )
+//                _statistics.print();
+//
+//            if ( _lpSolverType == LPSolverType::NATIVE )
+//            {
+//                checkOverallProgress();
+//                // Check whether progress has been made recently
+//
+//                if ( performPrecisionRestorationIfNeeded() )
+//                    continue;
+//
+//                if ( _tableau->basisMatrixAvailable() )
+//                {
+//                    explicitBasisBoundTightening();
+//                    applyAllBoundTightenings();
+//                    applyAllValidConstraintCaseSplits();
+//                }
+//            }
+//
+//            // If true, we just entered a new subproblem
+//            if ( splitJustPerformed )
+//            {
+//                performBoundTighteningAfterCaseSplit();
+//                informLPSolverOfBounds();
+//                splitJustPerformed = false;
+//            }
+//
+//            // Perform any SmtCore-initiated case splits
+//            if ( _smtCore.needToSplit() )
+//            {
+//                _smtCore.performSplit();
+//                splitJustPerformed = true;
+//                continue;
+//            }
+//
+//            if ( !_tableau->allBoundsValid() )
+//            {
+//                // Some variable bounds are invalid, so the query is unsat
+//                throw InfeasibleQueryException();
+//            }
+//
+//            if ( allVarsWithinBounds() )
+//            {
+//                // The linear portion of the problem has been solved.
+//                // Check the status of the PL constraints
+//                bool solutionFound =
+//                        adjustAssignmentToSatisfyNonLinearConstraints();
+//                if ( solutionFound )
+//                {
+//                    struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//                    _statistics.incLongAttribute
+//                            ( Statistics::TIME_MAIN_LOOP_MICRO,
+//                              TimeUtils::timePassed( mainLoopStart,
+//                                                     mainLoopEnd ) );
+//                    if ( _verbosity > 0 )
+//                    {
+//                        printf( "\nEngine::solve: sat assignment found\n" );
+//                        _statistics.print();
+//                    }
+//                    auto varSet = _tableau->getBasicVariables();
+//                    _smtCore._searchTree.markSatLeaf(varSet);
+//                    _exitCode = Engine::SAT;
+//
+//                    return true;
+//                }
+//                else
+//                    continue;
+//            }
+//
+//            // We have out-of-bounds variables.
+//            if ( _lpSolverType == LPSolverType::NATIVE )
+//                performSimplexStep();
+//            else
+//            {
+//                ENGINE_LOG( "Checking LP feasibility with Gurobi..." );
+//                DEBUG({ checkGurobiBoundConsistency(); });
+//                ASSERT( _lpSolverType == LPSolverType::GUROBI );
+//                LinearExpression dontCare;
+//                minimizeCostWithGurobi( dontCare );
+//            }
+//            continue;
+//        }
+//        catch ( const MalformedBasisException & )
+//        {
+//            _tableau->toggleOptimization( false );
+//            if ( !handleMalformedBasisException() )
+//            {
+//                ASSERT( _lpSolverType == LPSolverType::NATIVE );
+//                _exitCode = Engine::ERROR;
+//                exportInputQueryWithError( "Cannot restore tableau" );
+//                struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//                _statistics.incLongAttribute
+//                        ( Statistics::TIME_MAIN_LOOP_MICRO,
+//                          TimeUtils::timePassed( mainLoopStart,
+//                                                 mainLoopEnd ) );
+//                return false;
+//            }
+//        }
+//        catch ( const InfeasibleQueryException & )
+//        {
+//            _tableau->toggleOptimization( false );
+//            if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+//                _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+//            }
+//            // The current query is unsat, and we need to pop.
+//            // If we're at level 0, the whole query is unsat.
+//            if ( !_smtCore.popSplit())
+//            {
+//                struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//                _statistics.incLongAttribute
+//                        ( Statistics::TIME_MAIN_LOOP_MICRO,
+//                          TimeUtils::timePassed( mainLoopStart,
+//                                                 mainLoopEnd ) );
+//                if ( _verbosity > 0 )
+//                {
+//                    printf( "\nEngine::solve: unsat query\n" );
+//                    _statistics.print();
+//                }
+//                _exitCode = Engine::UNSAT;
+//                return false;
+//            }
+//            else
+//            {
+//                splitJustPerformed = true;
+//            }
+//        }
+//        catch ( const VariableOutOfBoundDuringOptimizationException & )
+//        {
+//            _tableau->toggleOptimization( false );
+//            continue;
+//        }
+//        catch ( MarabouError &e )
+//        {
+//            String message =
+//                    Stringf( "Caught a MarabouError. Code: %u. Message: %s ",
+//                             e.getCode(), e.getUserMessage() );
+//            _exitCode = Engine::ERROR;
+//            exportInputQueryWithError( message );
+//            struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//            _statistics.incLongAttribute
+//                    ( Statistics::TIME_MAIN_LOOP_MICRO,
+//                      TimeUtils::timePassed( mainLoopStart,
+//                                             mainLoopEnd ) );
+//            return false;
+//        }
+//        catch ( ... )
+//        {
+//            _exitCode = Engine::ERROR;
+//            exportInputQueryWithError( "Unknown error" );
+//            struct timespec mainLoopEnd = TimeUtils::sampleMicro();
+//            _statistics.incLongAttribute
+//                    ( Statistics::TIME_MAIN_LOOP_MICRO,
+//                      TimeUtils::timePassed( mainLoopStart,
+//                                             mainLoopEnd ) );
+//            return false;
+//        }
+//    }
+    return false;
+}
+
 void Engine::mainLoopStatistics()
 {
     struct timespec start = TimeUtils::sampleMicro();
@@ -3111,7 +3340,7 @@ unsigned Engine::getInconsistentVariable() {
     return tighten._variable;
 }
 
-SearchTree &Engine::getSearchTree() {
+SearchTree &Engine::getCurrentSearchTree() {
     return _smtCore._searchTree;
 }
 
@@ -3129,10 +3358,15 @@ void Engine::renameVariableInSearchTree() {
 void Engine::renameSearchTreeVariableInIncrementalProcess() {
     auto size = _smtCore._searchTree.size();
     for (size_t i = 0; i < size; ++ i) {
-        auto& node = _smtCore._searchTree.getNode(i);
+        auto& node = _smtCore._preSearchTree.getNode(i);
         node._conflictVariable = _preprocessor.getNewIndex(node._conflictVariable);
         for (auto &v : node._basicVariables) {
             v = _preprocessor.getNewIndex(v);
         }
     }
 }
+
+SearchTree &Engine::getPreSearchTree() {
+    return _smtCore._preSearchTree;
+}
+
