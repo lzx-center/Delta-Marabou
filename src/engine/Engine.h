@@ -215,6 +215,7 @@ public:
      */
     void applyBoundTightenings();
 
+    PiecewiseLinearConstraint* generateInputDisjunctiveConstraint(int inputVariable);
     /*
       Apply all bound tightenings (row and matrix-based) in
       the queue.

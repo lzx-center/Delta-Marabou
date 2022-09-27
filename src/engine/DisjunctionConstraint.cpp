@@ -215,7 +215,7 @@ List<PiecewiseLinearCaseSplit> DisjunctionConstraint::getCaseSplits() const
 {
     auto list = List<PiecewiseLinearCaseSplit>( _disjuncts.begin(), _disjuncts.end() );
     for (auto &v : list) {
-        v.setPostion(_position._layer, _position._node);
+        v.setPosition(_position._layer, _position._node);
     }
     return list;
 }

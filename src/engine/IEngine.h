@@ -55,6 +55,11 @@ public:
     */
     virtual void applySplit( const PiecewiseLinearCaseSplit &split ) = 0;
 
+
+    virtual PiecewiseLinearConstraint * generateInputDisjunctiveConstraint(int inputVariable) {
+        (void) inputVariable;
+        return nullptr;
+    }
     /*
       Register initial SnC split
     */

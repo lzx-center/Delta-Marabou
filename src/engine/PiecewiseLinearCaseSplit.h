@@ -21,7 +21,7 @@
 #include "MString.h"
 #include "Pair.h"
 #include "Tightening.h"
-
+#include "PiecewiseLinearCaseSplit.h"
 class PiecewiseLinearCaseSplit
 {
 public:
@@ -55,7 +55,7 @@ public:
     */
     void updateVariableIndex( unsigned oldIndex, unsigned newIndex );
 
-    void setPostion(int layer, int node) {
+    void setPosition(int layer, int node) {
         _layer = layer;
         _node = node;
     }

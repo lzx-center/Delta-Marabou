@@ -162,6 +162,7 @@ void SmtCore::performSplit() {
     stackEntry->_activeSplit = *split;
 
     _searchTree.processCaseSplit(&(*split));
+    _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
 
     // Store the remaining splits on the stack, for later
     stackEntry->_engineState = stateBeforeSplits;
@@ -513,5 +514,46 @@ void SmtCore::printAllConstraints() {
         printf("%s\n", s.ascii());
     }
     printf("Total size: %d\n", _positionToEliminatedPLConstraints.size() + _positionToPLConstraints.size());
+}
+
+void SmtCore::performSplitUntilReachLeaf() {
+    int currentIndex = _preSearchTree.getCurrentIndex();
+    auto node = &_preSearchTree.getNode(currentIndex);
+    while (!node->isLeaf()) {
+        PiecewiseLinearConstraint* plForSplit = nullptr;
+        auto pos = node->getPosition();
+        if (pos._layer == 0) {
+            plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
+        } else {
+            plForSplit = getConstraintByPosition(pos);
+        }
+        String s; plForSplit->dump(s);
+        printf("%s\n", s.ascii());
+        assert(plForSplit != nullptr && "constraint is nullptr");
+        setPiecewiseLinearConstraintForSplit(plForSplit);
+        performSplit();
+        node = &_preSearchTree.getCurrentNode();
+        assert(node->_id != -1 && "node id is -1");
+    }
+//    while (!node.isLeaf()) {
+//
+//        auto plForSplit = getConstraintByPosition(node.getPosition());
+//        assert(plForSplit != nullptr && "constraint is nullptr");
+//        String s; plForSplit->dump(s);
+//        printf("This is constraint for split\n%s\n", s.ascii());
+//        setPiecewiseLinearConstraintForSplit(plForSplit);
+//        performSplit();
+//        node = _preSearchTree.getCurrentNode();
+//    }
+}
+
+PiecewiseLinearConstraint *SmtCore::getConstraintByPosition(PiecewiseLinearConstraint::Position position) const {
+    if (_positionToPLConstraints.exists(position)) {
+        return _positionToPLConstraints.at(position);
+    }
+    if (_positionToEliminatedPLConstraints.exists(position)) {
+        return _positionToPLConstraints.at(position);
+    }
+    return nullptr;
 }
 

@@ -83,6 +83,8 @@ public:
         return _scoreTracker->topUnfixed();
     }
 
+    PiecewiseLinearConstraint *getConstraintByPosition(PiecewiseLinearConstraint::Position position) const;
+
     /*
       Inform the SMT core that a PL constraint is violated.
     */
@@ -112,7 +114,7 @@ public:
       splitting. Update bounds, add equations and update the stack.
     */
     void performSplit();
-
+    void performSplitUntilReachLeaf();
     /*
       Pop an old split from the stack, and perform a new split as
       needed. Return true if successful, false if the stack is empty.

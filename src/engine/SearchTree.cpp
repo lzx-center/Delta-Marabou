@@ -52,7 +52,7 @@ void SearchTree::print() {
 void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     int nodeIndex = newNode();
     auto &node = _nodes[nodeIndex];
-    node._preNode = _mapSplitToNode[{split->_layer, split->_node}];
+    node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
     auto &preNode = _nodes[node._preNode];
     auto direction = getDirection(preNode.getType(), split->getBoundTightenings());
     if (direction == LEFT) {
@@ -70,7 +70,7 @@ void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
     auto &node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
     node.setType(pLConstraint->getType());
-    _mapSplitToNode[{node._plLayer, node._plNode}] = _current;
+    _mapPositionToNode[pLConstraint->getPosition()] = _current;
 }
 
 int SearchTree::getCurrentIndex() {
@@ -160,6 +160,18 @@ SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening
     return CANT_JUDGE;
 }
 
+void SearchTree::gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split) {
+    auto direction = getDirection(type, split->getBoundTightenings());
+    if (direction == RIGHT) {
+        _current = _nodes[_current]._right;
+    } else if (direction == LEFT) {
+        _current = _nodes[_current]._left;
+    } else {
+        assert(false && "Unknown direction");
+    }
+    printf("Now go to node: %d\n", _current);
+}
+
 
 void SearchTreeNode::print() {
     printf(
@@ -188,6 +200,10 @@ void SearchTreeNode::print() {
         }
     }
     printf("\n");
+}
+
+PiecewiseLinearConstraint::Position SearchTreeNode::getPosition() {
+    return PiecewiseLinearConstraint::Position(_plLayer, _plNode);
 }
 
 void SearchTreeNode::setPosition(PiecewiseLinearConstraint::Position &position) {
