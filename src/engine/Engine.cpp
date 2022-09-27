@@ -335,9 +335,7 @@ bool Engine::solve( unsigned timeoutInSeconds )
         catch ( const InfeasibleQueryException & )
         {
             _tableau->toggleOptimization( false );
-            if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-                _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
-            }
+            _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
             if ( !_smtCore.popSplit())
@@ -400,8 +398,13 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
     // Register the boundManager with all the PL constraints
     for ( auto &plConstraint : _plConstraints ) {
         plConstraint->registerBoundManager( &_boundManager );
+        _smtCore.addConstraint(plConstraint);
     }
-
+    auto& eliminatedConstraints = _preprocessor.getEliminatedConstraintsList();
+    for (auto &plConstraint : eliminatedConstraints) {
+        _smtCore.addEliminatedConstraint(plConstraint);
+    }
+    _smtCore.printAllConstraints();
     updateDirections();
 
     storeInitialEngineState();
@@ -418,9 +421,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         printf("haha\n");
     }
 
-
-
-//    bool splitJustPerformed = true;
+//    auto& preTree = _smtCore._preSearchTree;
 //    struct timespec mainLoopStart = TimeUtils::sampleMicro();
 //    while ( true )
 //    {
@@ -2902,9 +2903,7 @@ bool Engine::restoreSmtState( SmtState & smtState )
     {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
-        if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
-        }
+        _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
         if ( !_smtCore.popSplit())
         {
             if ( _verbosity > 0 )
@@ -3359,7 +3358,7 @@ void Engine::renameVariableInSearchTree() {
 }
 
 void Engine::renameSearchTreeVariableInIncrementalProcess() {
-    auto size = _smtCore._searchTree.size();
+    auto size = _smtCore._preSearchTree.size();
     for (size_t i = 0; i < size; ++ i) {
         auto& node = _smtCore._preSearchTree.getNode(i);
         node._conflictVariable = _preprocessor.getNewIndex(node._conflictVariable);

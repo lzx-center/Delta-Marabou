@@ -147,8 +147,8 @@ double InputQuery::getSolutionValue( unsigned variable ) const
 
 void InputQuery::addPiecewiseLinearConstraint( PiecewiseLinearConstraint *constraint )
 {
-    _positionToPLConstraints[constraint->_position] = constraint;
     _plConstraints.append( constraint );
+    _positionToPLConstraints[constraint->_position] = constraint;
 }
 
 List<PiecewiseLinearConstraint *> &InputQuery::getPiecewiseLinearConstraints()
@@ -1289,4 +1289,12 @@ bool InputQuery::constructMaxLayer( NLR::NetworkLevelReasoner *nlr,
 
 PiecewiseLinearConstraint *InputQuery::getConstraintFromPosition(PiecewiseLinearConstraint::Position position) {
     return _positionToPLConstraints[position];
+}
+
+void InputQuery::printAllConstraint() {
+    printf("Total constraint number: %d, should be %d\n", _positionToPLConstraints.size(), _plConstraints.size());
+    for (auto& item : _positionToPLConstraints) {
+        String s; item.second->dump(s);
+        printf("All:\n%s", s.ascii());
+    }
 }

@@ -607,7 +607,7 @@ void ReluConstraint::dump( String &output ) const
                        existsLowerBound( _b ) ? Stringf( "%lf", getLowerBound( _b ) ).ascii() : "-inf",
                        existsUpperBound( _b ) ? Stringf( "%lf", getUpperBound( _b ) ).ascii() : "inf" );
 
-    output += Stringf( "f in [%s, %s]",
+    output += Stringf( "f in [%s, %s]\n",
                        existsLowerBound( _f ) ? Stringf( "%lf", getLowerBound( _f ) ).ascii() : "-inf",
                        existsUpperBound( _f ) ? Stringf( "%lf", getUpperBound( _f ) ).ascii() : "inf" );
 

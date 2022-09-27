@@ -88,6 +88,8 @@ public:
     */
     void reportViolatedConstraint( PiecewiseLinearConstraint *constraint );
 
+    void setPiecewiseLinearConstraintForSplit( PiecewiseLinearConstraint *constraint );
+
     /*
       Get the number of times a specific PL constraint has been reported as
       violated.
@@ -172,7 +174,14 @@ public:
     bool checkSkewFromDebuggingSolution();
     bool splitAllowsStoredSolution( const PiecewiseLinearCaseSplit &split, String &error ) const;
 
+    void addConstraint(PiecewiseLinearConstraint* piecewiseLinearConstraint);
+    void addEliminatedConstraint(PiecewiseLinearConstraint* piecewiseLinearConstraint);
+
+    void printAllConstraints();
 private:
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToPLConstraints;
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToEliminatedPLConstraints;
+
     /*
       Valid splits that were implied by level 0 of the stack.
     */

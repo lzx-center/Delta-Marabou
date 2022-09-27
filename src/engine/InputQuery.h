@@ -141,6 +141,7 @@ public:
     NLR::NetworkLevelReasoner *getNetworkLevelReasoner() const;
 
     PiecewiseLinearConstraint *getConstraintFromPosition(PiecewiseLinearConstraint::Position position);
+    void printAllConstraint();
 
 private:
     unsigned _numberOfVariables;
@@ -149,6 +150,9 @@ private:
     Map<unsigned, double> _upperBounds;
     List<PiecewiseLinearConstraint *> _plConstraints;
     List<TranscendentalConstraint *> _tsConstraints;
+    /*
+     * map position to constraint
+     */
     Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToPLConstraints;
 
     Map<unsigned, double> _solution;
