@@ -164,7 +164,7 @@ void SmtCore::performSplit() {
     _searchTree.processCaseSplit(&(*split));
     if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
-            _stackEntryToNode[stackEntry] = _preSearchTree.getCurrentIndex();
+            _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
             _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
         }
     }
@@ -223,7 +223,6 @@ bool SmtCore::popSplit() {
                 printf("Error! Popping from a compliant stack\n");
                 throw MarabouError(MarabouError::DEBUGGING_ERROR);
             }
-
             delete _stack.back()->_engineState;
             delete _stack.back();
             _stack.popBack();
@@ -240,12 +239,7 @@ bool SmtCore::popSplit() {
         }
 
         SmtStackEntry *stackEntry = _stack.back();
-        if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            if (_stackEntryToNode.exists(stackEntry)) {
-                printf("Now go back to node %d\n", _stackEntryToNode[stackEntry]);
-                _preSearchTree.setCurrent(_stackEntryToNode[stackEntry]);
-            }
-        }
+
 
         _context.pop();
         _engine->postContextPopHook();
@@ -269,7 +263,11 @@ bool SmtCore::popSplit() {
 
         _searchTree.processCaseSplit(&(*split));
         if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-           _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
+            if (_stackEntryToNode.exists(stackEntry->_id)) {
+                printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
+                _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
+                _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
+            }
         }
         SMT_LOG("\tApplying new split - DONE");
 
@@ -539,24 +537,12 @@ void SmtCore::performSplitUntilReachLeaf() {
         } else {
             plForSplit = getConstraintByPosition(pos);
         }
-        String s; plForSplit->dump(s);
-        printf("%s\n", s.ascii());
         assert(plForSplit != nullptr && "constraint is nullptr");
         setPiecewiseLinearConstraintForSplit(plForSplit);
         performSplit();
         node = &_preSearchTree.getCurrentNode();
         assert(node->_id != -1 && "node id is -1");
     }
-//    while (!node.isLeaf()) {
-//
-//        auto plForSplit = getConstraintByPosition(node.getPosition());
-//        assert(plForSplit != nullptr && "constraint is nullptr");
-//        String s; plForSplit->dump(s);
-//        printf("This is constraint for split\n%s\n", s.ascii());
-//        setPiecewiseLinearConstraintForSplit(plForSplit);
-//        performSplit();
-//        node = _preSearchTree.getCurrentNode();
-//    }
 }
 
 PiecewiseLinearConstraint *SmtCore::getConstraintByPosition(PiecewiseLinearConstraint::Position position) const {

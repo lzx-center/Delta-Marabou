@@ -57,6 +57,7 @@ void printHelpMessage() {
     printVersion();
     Options::get()->printHelpMessage();
 }
+int SmtStackEntry::index = 0;
 
 int main(int argc, char **argv) {
     try {

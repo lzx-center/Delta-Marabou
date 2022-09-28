@@ -201,6 +201,8 @@ void SearchTreeNode::print() {
         printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
                _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
         );
+    } else {
+        printf("Previous node: %d\n", _preNode);
     }
     if (_nodeType == UNSAT) {
         printf("Conflict variable: %d\n", _conflictVariable);
