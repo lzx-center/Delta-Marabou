@@ -162,8 +162,9 @@ void SmtCore::performSplit() {
     stackEntry->_activeSplit = *split;
 
     _searchTree.processCaseSplit(&(*split));
-    _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
-
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+        _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
+    }
     // Store the remaining splits on the stack, for later
     stackEntry->_engineState = stateBeforeSplits;
     ++split;

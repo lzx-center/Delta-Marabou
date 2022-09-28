@@ -17,7 +17,8 @@ public:
     enum NodeType {
         SAT = 0,
         UNSAT,
-        PATH_NODE
+        PATH_NODE,
+        LAZY_NODE //represent the subtree of this node is not stored
     };
 
     explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
@@ -89,6 +90,7 @@ private:
     std::vector<SearchTreeNode> _nodes;
     std::map<PiecewiseLinearConstraint::Position, int> _mapPositionToNode;
     ResultTYpe _resultType;
+    unsigned _nodeNumThreshold;
 
     friend class boost::serialization::access;
 
@@ -96,13 +98,14 @@ private:
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _root & _current & _nodes & _resultType;
+            ar & _root & _current & _nodes & _resultType & _nodeNumThreshold;
         }
     }
 
 public:
     SearchTree();
 
+    void setTreeNodeThreshold(unsigned num);
 
     SearchTreeNode &getNode(int index);
 

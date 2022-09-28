@@ -9,11 +9,17 @@
 
 size_t SearchTree::newNode() {
     auto size = _nodes.size();
+    if (size == _nodeNumThreshold) {
+        return -1;
+    }
     _nodes.emplace_back(SearchTreeNode(size));
+    if (size == _nodeNumThreshold - 1) {
+        _nodes.back()._nodeType = SearchTreeNode::LAZY_NODE;
+    }
     return size;
 }
 
-SearchTree::SearchTree() : _root(-1), _current(-1), _resultType(NOT_VERIFIED) {
+SearchTree::SearchTree() : _root(-1), _current(-1), _resultType(NOT_VERIFIED), _nodeNumThreshold(1000000000) {
     auto index = newNode();
     _root = _current = index;
 }
@@ -51,6 +57,10 @@ void SearchTree::print() {
 
 void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     int nodeIndex = newNode();
+    if (nodeIndex == -1) {
+        _current = -1;
+        return;
+    }
     auto &node = _nodes[nodeIndex];
     node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
     auto &preNode = _nodes[node._preNode];
@@ -67,6 +77,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
 }
 
 void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
+    if (_current == -1) return;
     auto &node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
     node.setType(pLConstraint->getType());
@@ -78,6 +89,9 @@ int SearchTree::getCurrentIndex() {
 }
 
 void SearchTree::markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict) {
+    if (_current == -1) {
+        return;
+    }
     auto &node = _nodes[_current];
     assert(node._plType == UNKNOWN);
     _resultType = VERIFIED_SAT;
@@ -172,6 +186,10 @@ void SearchTree::gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLin
     printf("Now go to node: %d\n", _current);
 }
 
+void SearchTree::setTreeNodeThreshold(unsigned num) {
+    _nodeNumThreshold = num;
+}
+
 
 void SearchTreeNode::print() {
     printf(
@@ -213,7 +231,7 @@ void SearchTreeNode::setPosition(PiecewiseLinearConstraint::Position &position) 
 
 
 bool SearchTreeNode::isLeaf() {
-    return _nodeType == SAT or _nodeType == UNSAT;
+    return _nodeType == SAT or _nodeType == UNSAT or _nodeType == LAZY_NODE;
 }
 
 void SearchTreeNode::setType(PiecewiseLinearFunctionType type) {
@@ -264,6 +282,9 @@ String SearchTreeNode::getStringNodeType() const {
             break;
         case PATH_NODE:
             s = "path_node";
+            break;
+        case LAZY_NODE:
+            s = "lazy_node";
             break;
     }
     return s;
