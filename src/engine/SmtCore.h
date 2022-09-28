@@ -198,7 +198,7 @@ private:
       The case-split stack.
     */
     List<SmtStackEntry *> _stack;
-
+    Map<SmtStackEntry *, unsigned > _stackEntryToNode;
     /*
      * map stack entry to node index
      */

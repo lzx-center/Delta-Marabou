@@ -163,7 +163,10 @@ void SmtCore::performSplit() {
 
     _searchTree.processCaseSplit(&(*split));
     if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-        _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
+        if (!_preSearchTree.getCurrentNode().isLeaf()) {
+            _stackEntryToNode[stackEntry] = _preSearchTree.getCurrentIndex();
+            _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
+        }
     }
     // Store the remaining splits on the stack, for later
     stackEntry->_engineState = stateBeforeSplits;
@@ -237,6 +240,12 @@ bool SmtCore::popSplit() {
         }
 
         SmtStackEntry *stackEntry = _stack.back();
+        if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            if (_stackEntryToNode.exists(stackEntry)) {
+                printf("Now go back to node %d\n", _stackEntryToNode[stackEntry]);
+                _preSearchTree.setCurrent(_stackEntryToNode[stackEntry]);
+            }
+        }
 
         _context.pop();
         _engine->postContextPopHook();
@@ -259,7 +268,9 @@ bool SmtCore::popSplit() {
         _engine->applySplit(*split);
 
         _searchTree.processCaseSplit(&(*split));
-
+        if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+           _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
+        }
         SMT_LOG("\tApplying new split - DONE");
 
         stackEntry->_activeSplit = *split;

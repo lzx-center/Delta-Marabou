@@ -77,6 +77,7 @@ public:
     */
     bool solve( unsigned timeoutInSeconds = 0 );
     bool incrementalSolve( unsigned timeoutInSeconds = 0);
+    void setBasicVariables();
     /*
       Minimize the cost function with respect to the current set of linear constraints.
     */

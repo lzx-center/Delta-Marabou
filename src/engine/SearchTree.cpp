@@ -175,6 +175,7 @@ SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening
 }
 
 void SearchTree::gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split) {
+    if (_nodes[_current].isLeaf()) return;
     auto direction = getDirection(type, split->getBoundTightenings());
     if (direction == RIGHT) {
         _current = _nodes[_current]._right;
@@ -292,4 +293,12 @@ String SearchTreeNode::getStringNodeType() const {
 
 SearchTreeNode::NodeType SearchTreeNode::getNodeType() {
     return _nodeType;
+}
+
+List<unsigned> SearchTreeNode::getBasicVariableLists() {
+    List<unsigned> ret;
+    for (auto &v : _basicVariables) {
+        ret.append(v);
+    }
+    return ret;
 }

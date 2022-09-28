@@ -45,6 +45,8 @@ public:
 
     PiecewiseLinearFunctionType getType();
 
+    List<unsigned> getBasicVariableLists();
+
     bool isLeaf();
 
     String getStringPlType() const;

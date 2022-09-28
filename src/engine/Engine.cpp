@@ -365,9 +365,20 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     _smtCore._preSearchTree.print();
     _smtCore._preSearchTree.setCurrent(0);
+
+//    struct timespec mainLoopStart = TimeUtils::sampleMicro();
     _smtCore.performSplitUntilReachLeaf();
+    _smtCore.setPiecewiseLinearConstraintForSplit(_plConstraints.front());
+    _smtCore.performSplit();
+    while (_smtCore.popSplit()) {
+        _smtCore.performSplitUntilReachLeaf();
+    }
+//    setBasicVariables();
+//    if ( !_tableau->allBoundsValid() ) {
+//        printf("hahahah, I found UNSAAT!\n");
+//    }
 
-
+//    bool splitJustPerformed = true;
 //    auto& preTree = _smtCore._preSearchTree;
 //    struct timespec mainLoopStart = TimeUtils::sampleMicro();
 //    while ( true )
@@ -2993,5 +3004,15 @@ PiecewiseLinearConstraint *Engine::generateInputDisjunctiveConstraint(int inputV
             (new DisjunctionConstraint(splits));
     _disjunctionForSplitting->setPosition(0, inputVariable);
     return _disjunctionForSplitting.get();
+}
+
+void Engine::setBasicVariables() {
+    if (_smtCore._preSearchTree.getCurrentIndex() == -1)
+        return;
+    auto& node = _smtCore._preSearchTree.getCurrentNode();
+    if (node.getNodeType() == SearchTreeNode::SAT or node.getNodeType() == SearchTreeNode::UNSAT) {
+        auto shouldBeBasicList = node.getBasicVariableLists();
+        _tableau->initializeTableau(shouldBeBasicList);
+    }
 }
 
