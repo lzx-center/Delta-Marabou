@@ -191,7 +191,7 @@ public:
       Pick the piecewise linear constraint for splitting
     */
     PiecewiseLinearConstraint *pickSplitPLConstraint( DivideStrategy strategy );
-
+    void performSplitUntilReachLeaf();
     /*
       Call-back from QueryDividers
       Pick the piecewise linear constraint for splitting

@@ -137,6 +137,7 @@ public:
 
     void gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split);
 
+    void gotoChildByDirection(int current, DirectionType direction);
     /*
      * 0 : for left
      * 1 : for right

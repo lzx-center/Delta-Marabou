@@ -121,6 +121,15 @@ void SmtCore::performSplit() {
     if (!_constraintForSplitting->isActive()) {
         _needToSplit = false;
         _constraintToViolationCount[_constraintForSplitting] = 0;
+
+        int current = _preSearchTree.getCurrentIndex();
+        if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
+            current = _preSearchTree.getNode(current)._left;
+        } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
+            current = _preSearchTree.getNode(current)._right;
+        }
+        _preSearchTree.setCurrent(current);
+        
         _constraintForSplitting = NULL;
         return;
     }
@@ -166,6 +175,7 @@ void SmtCore::performSplit() {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
             _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
             _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
+            printf("In split\n");
         }
     }
     // Store the remaining splits on the stack, for later
@@ -267,6 +277,7 @@ bool SmtCore::popSplit() {
                 printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
+                printf("In pop\n");
             }
         }
         SMT_LOG("\tApplying new split - DONE");
@@ -279,7 +290,6 @@ bool SmtCore::popSplit() {
             _searchTree.markUnsatLeaf(_engine->getBasicVariable(), _engine->getInconsistentVariable());
         }
     }
-
     if (_statistics) {
         unsigned level = getStackDepth();
         _statistics->setUnsignedAttribute(Statistics::CURRENT_DECISION_LEVEL,
@@ -538,9 +548,12 @@ void SmtCore::performSplitUntilReachLeaf() {
             plForSplit = getConstraintByPosition(pos);
         }
         assert(plForSplit != nullptr && "constraint is nullptr");
+        String s; plForSplit->dump(s);
+        printf("Ready for split: %s", s.ascii());
         setPiecewiseLinearConstraintForSplit(plForSplit);
         performSplit();
         node = &_preSearchTree.getCurrentNode();
+        printf("Center: at node： %d\n", node->_id);
         assert(node->_id != -1 && "node id is -1");
     }
 }

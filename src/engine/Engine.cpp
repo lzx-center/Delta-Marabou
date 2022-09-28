@@ -358,10 +358,9 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         printf("\n---\n");
     }
 
-    (void) timeoutInSeconds;
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
-    _smtCore.performSplitUntilReachLeaf();
+    performSplitUntilReachLeaf();
     bool splitJustPerformed = true;
 
     while ( true )
@@ -528,7 +527,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             }
             else
             {
-                _smtCore.performSplitUntilReachLeaf();
+                performSplitUntilReachLeaf();
                 splitJustPerformed = true;
             }
         }
@@ -2564,7 +2563,7 @@ bool Engine::restoreSmtState(SmtState &smtState) {
                 p->setActiveConstraint(true);
             return false;
         } else {
-            _smtCore.performSplitUntilReachLeaf();
+            performSplitUntilReachLeaf();
         }
     }
     return true;
@@ -2995,8 +2994,18 @@ void Engine::setBasicVariables() {
         return;
     auto& node = _smtCore._preSearchTree.getCurrentNode();
     if (node.getNodeType() == SearchTreeNode::SAT or node.getNodeType() == SearchTreeNode::UNSAT) {
-        auto shouldBeBasicList = node.getBasicVariableLists();
-        _tableau->initializeTableau(shouldBeBasicList);
+       try {
+           auto shouldBeBasicList = node.getBasicVariableLists();
+           _tableau->initializeTableau(shouldBeBasicList);
+       } catch (MalformedBasisException) {
+           printf("restore failed!!!\n");
+       }
     }
+}
+
+void Engine::performSplitUntilReachLeaf() {
+    _smtCore.performSplitUntilReachLeaf();
+//    auto shouldBeBasicList = _smtCore._preSearchTree.getCurrentNode().getBasicVariableLists();
+//    setBasicVariables();
 }
 

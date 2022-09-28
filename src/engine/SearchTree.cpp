@@ -174,21 +174,36 @@ SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening
     return CANT_JUDGE;
 }
 
+
+
 void SearchTree::gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split) {
-    if (_nodes[_current].isLeaf()) return;
-    auto direction = getDirection(type, split->getBoundTightenings());
-    if (direction == RIGHT) {
-        _current = _nodes[_current]._right;
-    } else if (direction == LEFT) {
-        _current = _nodes[_current]._left;
-    } else {
-        assert(false && "Unknown direction");
+    if (_nodes[_current].isLeaf()) {
+        return;
     }
+    auto direction = getDirection(type, split->getBoundTightenings());
+    gotoChildByDirection(_current, direction);
     printf("Now go to node: %d\n", _current);
 }
 
 void SearchTree::setTreeNodeThreshold(unsigned num) {
     _nodeNumThreshold = num;
+}
+
+void SearchTree::gotoChildByDirection(int current, SearchTree::DirectionType direction) {
+    if (direction == RIGHT) {
+        printf("go to right, current id: %d\n", _current);
+        _current = _nodes[current]._right;
+    } else if (direction == LEFT) {
+        printf("go to left, current id: %d\n", _current);
+        _current = _nodes[current]._left;
+    } else {
+        assert(false && "Unknown direction");
+    }
+    // Means that there's no son node in first verification
+    if (_current == -1) {
+        _current = current;
+        _nodes[current]._nodeType = SearchTreeNode::LAZY_NODE;
+    }
 }
 
 

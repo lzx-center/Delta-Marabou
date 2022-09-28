@@ -367,7 +367,6 @@ void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
 
     // Factorize the basis
     _basisFactorization->obtainFreshBasis();
-
     // Compute assignment
     computeAssignment();
 }

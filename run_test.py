@@ -8,7 +8,7 @@ def run_first():
         for file in file_names:
             if file.endswith(".nnet"):
                 file_path = os.path.join(path, file)
-                command = f"/home/center/Delta-Marabou/build/Marabou {file_path} {properties} > {file_path + '.log'}"
+                command = f"/home/center/Delta-Marabou/build/Marabou {file_path} {properties} > {file_path + '.1.log'}"
                 print(f"Running {command}")
                 os.system(command)
 
@@ -21,9 +21,9 @@ def run_second():
             if file.endswith(".nnet"):
                 file_path = os.path.join(path, file)
                 file_search_tree = file_path + ".searchTree"
-                command = f"/home/center/Delta-Marabou/build/Marabou {file_path} {properties} --search-tree-file {file_search_tree} --incremental-verification > {file_path + '.log'}"
+                command = f"/home/center/Delta-Marabou/build/Marabou {file_path} {properties} --search-tree-file {file_search_tree} --incremental-verification > {file_path + '.2.log'}"
                 print(f"{command}")
-                os.system(command)
+                # os.system(command)
 
 
 if __name__ == "__main__":
