@@ -34,7 +34,6 @@ public:
     int _left, _right;
     int _preNode, _plLayer, _plNode;
     std::vector<unsigned> _basicVariables;
-    std::vector<unsigned> _satisfyPath;
     PiecewiseLinearFunctionType _plType;
 
     PiecewiseLinearConstraint::Position getPosition();
@@ -70,7 +69,6 @@ private:
         if (version >= 0) {
             ar & _plLayer & _plNode & _conflictVariable;
             ar & _left & _right & _preNode & _id & _nodeType & _basicVariables & _plType;
-            ar & _satisfyPath;
         }
     }
 };
@@ -87,6 +85,7 @@ public:
         RIGHT,
         CANT_JUDGE
     };
+    std::vector<unsigned> _satisfyPath;
 private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
@@ -100,7 +99,7 @@ private:
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _root & _current & _nodes & _resultType & _nodeNumThreshold;
+            ar & _root & _current & _nodes & _resultType & _nodeNumThreshold & _satisfyPath;
         }
     }
 
@@ -112,6 +111,8 @@ public:
     SearchTreeNode &getNode(int index);
 
     size_t size();
+
+    void adjustDirection(List<PiecewiseLinearCaseSplit>& list);
 
     void markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict);
 

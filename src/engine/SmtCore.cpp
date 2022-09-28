@@ -129,7 +129,7 @@ void SmtCore::performSplit() {
             current = _preSearchTree.getNode(current)._right;
         }
         _preSearchTree.setCurrent(current);
-        
+
         _constraintForSplitting = NULL;
         return;
     }
@@ -148,6 +148,7 @@ void SmtCore::performSplit() {
     //   1. Obtain the splits.
     //   2. Disable the constraint, so that it is marked as disbaled in the EngineState.
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
+    _preSearchTree.adjustDirection(splits);
 
     _searchTree.setNodeInfo(_constraintForSplitting);
 
@@ -540,6 +541,11 @@ void SmtCore::performSplitUntilReachLeaf() {
     int currentIndex = _preSearchTree.getCurrentIndex();
     auto node = &_preSearchTree.getNode(currentIndex);
     while (!node->isLeaf()) {
+        if (!_preSearchTree._satisfyPath.empty()) {
+            if (_preSearchTree.getCurrentIndex() == (int)_preSearchTree._satisfyPath.back()) {
+                _preSearchTree._satisfyPath.pop_back();
+            }
+        }
         PiecewiseLinearConstraint* plForSplit = nullptr;
         auto pos = node->getPosition();
         if (pos._layer == 0) {
@@ -548,8 +554,8 @@ void SmtCore::performSplitUntilReachLeaf() {
             plForSplit = getConstraintByPosition(pos);
         }
         assert(plForSplit != nullptr && "constraint is nullptr");
-        String s; plForSplit->dump(s);
-        printf("Ready for split: %s", s.ascii());
+//        String s; plForSplit->dump(s);
+//        printf("Ready for split: %s", s.ascii());
         setPiecewiseLinearConstraintForSplit(plForSplit);
         performSplit();
         node = &_preSearchTree.getCurrentNode();

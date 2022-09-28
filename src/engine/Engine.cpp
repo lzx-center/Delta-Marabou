@@ -360,6 +360,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
+    _smtCore._preSearchTree.print();
     performSplitUntilReachLeaf();
     bool splitJustPerformed = true;
 

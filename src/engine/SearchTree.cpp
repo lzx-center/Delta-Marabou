@@ -51,6 +51,12 @@ void SearchTree::print() {
     for (auto n: _nodes) {
         n.print();
     }
+    if (_resultType == VERIFIED_SAT) {
+        printf("Satisfy path: ");
+        for (size_t i = 0; i < _satisfyPath.size(); ++i) {
+            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d -> ", _satisfyPath[i]);
+        }
+    }
     printf("Verified result: %s\n", getStringResultType().ascii());
 }
 
@@ -117,11 +123,8 @@ void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
     int current = node._id;
     while (current != -1) {
         stack.push_back(current);
+        _satisfyPath.push_back(current);
         current = _nodes[current]._preNode;
-    }
-    node._satisfyPath.reserve(stack.size());
-    for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
-        node._satisfyPath.push_back(*it);
     }
 }
 
@@ -206,6 +209,24 @@ void SearchTree::gotoChildByDirection(int current, SearchTree::DirectionType dir
     }
 }
 
+void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
+    if (_satisfyPath.empty()) {
+        return;
+    }
+    auto direction = getDirection(_nodes[_current].getType(), list.front().getBoundTightenings());
+    if (_nodes[_current]._left == (int)_satisfyPath.back()) {
+        if (direction == RIGHT) {
+            std::reverse(list.begin(), list.end());
+        }
+    } else if (_nodes[_current]._right == (int)_satisfyPath.back()) {
+        if (direction == LEFT) {
+            std::reverse(list.begin(), list.end());
+        }
+    } else {
+        printf("Unknown direction to choose\n");
+    }
+}
+
 
 void SearchTreeNode::print() {
     printf(
@@ -228,12 +249,6 @@ void SearchTreeNode::print() {
             printf("%d ", v);
         }
         printf("\n");
-    }
-    if (_nodeType == SAT) {
-        printf("Satisfy path: ");
-        for (size_t i = 0; i < _satisfyPath.size(); ++i) {
-            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d -> ", _satisfyPath[i]);
-        }
     }
     printf("\n");
 }
