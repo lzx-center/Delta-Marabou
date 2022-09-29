@@ -363,7 +363,6 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 //    performSplitUntilReachLeaf();
     _smtCore.performOneStepInSearchTree();
     bool splitJustPerformed = false;
-    bool restore = false;
     while (true) {
         struct timespec mainLoopEnd = TimeUtils::sampleMicro();
         _statistics.incLongAttribute(Statistics::TIME_MAIN_LOOP_MICRO,
@@ -429,11 +428,11 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-                if (_smtCore._preSearchTree.getResultType() == SearchTree::VERIFIED_SAT and restore == false and
-                    _smtCore._preSearchTree._satisfyPath.empty()) {
+                if (_smtCore._preSearchTree.getResultType() == SearchTree::VERIFIED_SAT and
+                    !_smtCore._preSearchTree._satisfyPath.empty()) {
                     _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
                 }
-                    continue;
+                continue;
             }
 
             if (!_tableau->allBoundsValid()) {
