@@ -360,23 +360,21 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
-    performSplitUntilReachLeaf();
-    bool splitJustPerformed = true;
-
-    while ( true )
-    {
+//    performSplitUntilReachLeaf();
+    _smtCore.performOneStepInSearchTree();
+    bool splitJustPerformed = false;
+    bool restore = false;
+    while (true) {
         struct timespec mainLoopEnd = TimeUtils::sampleMicro();
-        _statistics.incLongAttribute( Statistics::TIME_MAIN_LOOP_MICRO,
-                                      TimeUtils::timePassed( mainLoopStart,
-                                                             mainLoopEnd ) );
+        _statistics.incLongAttribute(Statistics::TIME_MAIN_LOOP_MICRO,
+                                     TimeUtils::timePassed(mainLoopStart,
+                                                           mainLoopEnd));
         mainLoopStart = mainLoopEnd;
 
-        if ( shouldExitDueToTimeout( timeoutInSeconds ) )
-        {
-            if ( _verbosity > 0 )
-            {
-                printf( "\n\nEngine: quitting due to timeout...\n\n" );
-                printf( "Final statistics:\n" );
+        if (shouldExitDueToTimeout(timeoutInSeconds)) {
+            if (_verbosity > 0) {
+                printf("\n\nEngine: quitting due to timeout...\n\n");
+                printf("Final statistics:\n");
                 _statistics.print();
             }
 
@@ -385,12 +383,10 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             return false;
         }
 
-        if ( _quitRequested )
-        {
-            if ( _verbosity > 0 )
-            {
-                printf( "\n\nEngine: quitting due to external request...\n\n" );
-                printf( "Final statistics:\n" );
+        if (_quitRequested) {
+            if (_verbosity > 0) {
+                printf("\n\nEngine: quitting due to external request...\n\n");
+                printf("Final statistics:\n");
                 _statistics.print();
             }
 
@@ -398,27 +394,24 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             return false;
         }
 
-        try
-        {
-            DEBUG( _tableau->verifyInvariants() );
+        try {
+            DEBUG(_tableau->verifyInvariants());
 
             mainLoopStatistics();
-            if ( _verbosity > 1 &&
-                 _statistics.getLongAttribute
-                         ( Statistics::NUM_MAIN_LOOP_ITERATIONS ) %
-                 _statisticsPrintingFrequency == 0 )
+            if (_verbosity > 1 &&
+                _statistics.getLongAttribute
+                        (Statistics::NUM_MAIN_LOOP_ITERATIONS) %
+                _statisticsPrintingFrequency == 0)
                 _statistics.print();
 
-            if ( _lpSolverType == LPSolverType::NATIVE )
-            {
+            if (_lpSolverType == LPSolverType::NATIVE) {
                 checkOverallProgress();
                 // Check whether progress has been made recently
 
-                if ( performPrecisionRestorationIfNeeded() )
+                if (performPrecisionRestorationIfNeeded())
                     continue;
 
-                if ( _tableau->basisMatrixAvailable() )
-                {
+                if (_tableau->basisMatrixAvailable()) {
                     explicitBasisBoundTightening();
                     applyAllBoundTightenings();
                     applyAllValidConstraintCaseSplits();
@@ -426,43 +419,41 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             }
 
             // If true, we just entered a new subproblem
-            if ( splitJustPerformed )
-            {
+            if (splitJustPerformed) {
                 performBoundTighteningAfterCaseSplit();
                 informLPSolverOfBounds();
                 splitJustPerformed = false;
             }
 
             // Perform any SmtCore-initiated case splits
-            if ( _smtCore.needToSplit() )
-            {
+            if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-                continue;
+                if (_smtCore._preSearchTree.getResultType() == SearchTree::VERIFIED_SAT and restore == false and
+                    _smtCore._preSearchTree._satisfyPath.empty()) {
+                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
+                }
+                    continue;
             }
 
-            if ( !_tableau->allBoundsValid() )
-            {
+            if (!_tableau->allBoundsValid()) {
                 // Some variable bounds are invalid, so the query is unsat
                 throw InfeasibleQueryException();
             }
 
-            if ( allVarsWithinBounds() )
-            {
+            if (allVarsWithinBounds()) {
                 // The linear portion of the problem has been solved.
                 // Check the status of the PL constraints
                 bool solutionFound =
                         adjustAssignmentToSatisfyNonLinearConstraints();
-                if ( solutionFound )
-                {
+                if (solutionFound) {
                     struct timespec mainLoopEnd = TimeUtils::sampleMicro();
                     _statistics.incLongAttribute
-                            ( Statistics::TIME_MAIN_LOOP_MICRO,
-                              TimeUtils::timePassed( mainLoopStart,
-                                                     mainLoopEnd ) );
-                    if ( _verbosity > 0 )
-                    {
-                        printf( "\nEngine::solve: sat assignment found\n" );
+                            (Statistics::TIME_MAIN_LOOP_MICRO,
+                             TimeUtils::timePassed(mainLoopStart,
+                                                   mainLoopEnd));
+                    if (_verbosity > 0) {
+                        printf("\nEngine::solve: sat assignment found\n");
                         _statistics.print();
                     }
                     auto varSet = _tableau->getBasicVariables();
@@ -470,95 +461,83 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     _exitCode = Engine::SAT;
 
                     return true;
-                }
-                else
+                } else
                     continue;
             }
 
             // We have out-of-bounds variables.
-            if ( _lpSolverType == LPSolverType::NATIVE )
+            if (_lpSolverType == LPSolverType::NATIVE)
                 performSimplexStep();
-            else
-            {
-                ENGINE_LOG( "Checking LP feasibility with Gurobi..." );
+            else {
+                ENGINE_LOG("Checking LP feasibility with Gurobi...");
                 DEBUG({ checkGurobiBoundConsistency(); });
-                ASSERT( _lpSolverType == LPSolverType::GUROBI );
+                ASSERT(_lpSolverType == LPSolverType::GUROBI);
                 LinearExpression dontCare;
-                minimizeCostWithGurobi( dontCare );
+                minimizeCostWithGurobi(dontCare);
             }
             continue;
         }
-        catch ( const MalformedBasisException & )
-        {
-            _tableau->toggleOptimization( false );
-            if ( !handleMalformedBasisException() )
-            {
-                ASSERT( _lpSolverType == LPSolverType::NATIVE );
+        catch (const MalformedBasisException &) {
+            _tableau->toggleOptimization(false);
+            if (!handleMalformedBasisException()) {
+                ASSERT(_lpSolverType == LPSolverType::NATIVE);
                 _exitCode = Engine::ERROR;
-                exportInputQueryWithError( "Cannot restore tableau" );
+                exportInputQueryWithError("Cannot restore tableau");
                 struct timespec mainLoopEnd = TimeUtils::sampleMicro();
                 _statistics.incLongAttribute
-                        ( Statistics::TIME_MAIN_LOOP_MICRO,
-                          TimeUtils::timePassed( mainLoopStart,
-                                                 mainLoopEnd ) );
+                        (Statistics::TIME_MAIN_LOOP_MICRO,
+                         TimeUtils::timePassed(mainLoopStart,
+                                               mainLoopEnd));
                 return false;
             }
         }
-        catch ( const InfeasibleQueryException & )
-        {
-            _tableau->toggleOptimization( false );
+        catch (const InfeasibleQueryException &) {
+            _tableau->toggleOptimization(false);
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
-            if ( !_smtCore.popSplit())
-            {
+            if (!_smtCore.popSplit()) {
                 struct timespec mainLoopEnd = TimeUtils::sampleMicro();
                 _statistics.incLongAttribute
-                        ( Statistics::TIME_MAIN_LOOP_MICRO,
-                          TimeUtils::timePassed( mainLoopStart,
-                                                 mainLoopEnd ) );
-                if ( _verbosity > 0 )
-                {
-                    printf( "\nEngine::solve: unsat query\n" );
+                        (Statistics::TIME_MAIN_LOOP_MICRO,
+                         TimeUtils::timePassed(mainLoopStart,
+                                               mainLoopEnd));
+                if (_verbosity > 0) {
+                    printf("\nEngine::solve: unsat query\n");
                     _statistics.print();
                 }
                 _exitCode = Engine::UNSAT;
                 return false;
-            }
-            else
-            {
+            } else {
                 performSplitUntilReachLeaf();
                 splitJustPerformed = true;
             }
         }
-        catch ( const VariableOutOfBoundDuringOptimizationException & )
-        {
-            _tableau->toggleOptimization( false );
+        catch (const VariableOutOfBoundDuringOptimizationException &) {
+            _tableau->toggleOptimization(false);
             continue;
         }
-        catch ( MarabouError &e )
-        {
+        catch (MarabouError &e) {
             String message =
-                    Stringf( "Caught a MarabouError. Code: %u. Message: %s ",
-                             e.getCode(), e.getUserMessage() );
+                    Stringf("Caught a MarabouError. Code: %u. Message: %s ",
+                            e.getCode(), e.getUserMessage());
             _exitCode = Engine::ERROR;
-            exportInputQueryWithError( message );
+            exportInputQueryWithError(message);
             struct timespec mainLoopEnd = TimeUtils::sampleMicro();
             _statistics.incLongAttribute
-                    ( Statistics::TIME_MAIN_LOOP_MICRO,
-                      TimeUtils::timePassed( mainLoopStart,
-                                             mainLoopEnd ) );
+                    (Statistics::TIME_MAIN_LOOP_MICRO,
+                     TimeUtils::timePassed(mainLoopStart,
+                                           mainLoopEnd));
             return false;
         }
-        catch ( ... )
-        {
+        catch (...) {
             _exitCode = Engine::ERROR;
-            exportInputQueryWithError( "Unknown error" );
+            exportInputQueryWithError("Unknown error");
             struct timespec mainLoopEnd = TimeUtils::sampleMicro();
             _statistics.incLongAttribute
-                    ( Statistics::TIME_MAIN_LOOP_MICRO,
-                      TimeUtils::timePassed( mainLoopStart,
-                                             mainLoopEnd ) );
+                    (Statistics::TIME_MAIN_LOOP_MICRO,
+                     TimeUtils::timePassed(mainLoopStart,
+                                           mainLoopEnd));
             return false;
         }
     }
@@ -2992,14 +2971,14 @@ PiecewiseLinearConstraint *Engine::generateInputDisjunctiveConstraint(int inputV
 void Engine::setBasicVariables() {
     if (_smtCore._preSearchTree.getCurrentIndex() == -1)
         return;
-    auto& node = _smtCore._preSearchTree.getCurrentNode();
+    auto &node = _smtCore._preSearchTree.getCurrentNode();
     if (node.getNodeType() == SearchTreeNode::SAT or node.getNodeType() == SearchTreeNode::UNSAT) {
-       try {
-           auto shouldBeBasicList = node.getBasicVariableLists();
-           _tableau->initializeTableau(shouldBeBasicList);
-       } catch (MalformedBasisException) {
-           printf("restore failed!!!\n");
-       }
+        try {
+            auto shouldBeBasicList = node.getBasicVariableLists();
+            _tableau->initializeTableau(shouldBeBasicList);
+        } catch (MalformedBasisException) {
+            printf("restore failed!!!\n");
+        }
     }
 }
 

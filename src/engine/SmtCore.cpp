@@ -128,6 +128,9 @@ void SmtCore::performSplit() {
             } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
                 current = _preSearchTree.getNode(current)._right;
             }
+            if (current == (int)_preSearchTree._satisfyPath.back()) {
+                _preSearchTree._satisfyPath.pop_back();
+            }
             _preSearchTree.setCurrent(current);
         }
         _constraintForSplitting = nullptr;
@@ -203,6 +206,9 @@ void SmtCore::performSplit() {
     }
 
     _constraintForSplitting = nullptr;
+    if (isIncremental) {
+        performOneStepInSearchTree();
+    }
 }
 
 unsigned SmtCore::getStackDepth() const {
@@ -546,17 +552,7 @@ void SmtCore::performSplitUntilReachLeaf() {
                 _preSearchTree._satisfyPath.pop_back();
             }
         }
-        PiecewiseLinearConstraint* plForSplit = nullptr;
-        auto pos = node->getPosition();
-        if (pos._layer == 0) {
-            plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
-        } else {
-            plForSplit = getConstraintByPosition(pos);
-        }
-        assert(plForSplit != nullptr && "constraint is nullptr");
-//        String s; plForSplit->dump(s);
-//        printf("Ready for split: %s", s.ascii());
-        setPiecewiseLinearConstraintForSplit(plForSplit);
+        setConstraintForSplit();
         performSplit();
         node = &_preSearchTree.getCurrentNode();
         printf("Center: at node： %d\n", node->_id);
@@ -572,5 +568,30 @@ PiecewiseLinearConstraint *SmtCore::getConstraintByPosition(PiecewiseLinearConst
         return _positionToPLConstraints.at(position);
     }
     return nullptr;
+}
+
+void SmtCore::setConstraintForSplit() {
+    auto& node = _preSearchTree.getCurrentNode();
+    PiecewiseLinearConstraint* plForSplit = nullptr;
+    auto pos = node.getPosition();
+    if (pos._layer == 0) {
+        plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
+    } else {
+        plForSplit = getConstraintByPosition(pos);
+    }
+    assert(plForSplit != nullptr && "constraint is nullptr");
+//        String s; plForSplit->dump(s);
+//        printf("Ready for split: %s", s.ascii());
+    setPiecewiseLinearConstraintForSplit(plForSplit);
+}
+
+void SmtCore::performOneStepInSearchTree() {
+    if (!_preSearchTree._satisfyPath.empty()) {
+        if (_preSearchTree.getCurrentIndex() == (int) _preSearchTree._satisfyPath.back()) {
+            _preSearchTree._satisfyPath.pop_back();
+        }
+    }
+    if (_preSearchTree.getCurrentNode().isLeaf()) return;
+    setConstraintForSplit();
 }
 

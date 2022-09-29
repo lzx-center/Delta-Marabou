@@ -172,6 +172,7 @@ void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
     auto direction = getDirection(split->getType());
     gotoChildByDirection(_current, direction);
     printf("Current node is [%d]\n", _current);
+    _nodes[_current].print();
 }
 
 void SearchTree::setTreeNodeThreshold(unsigned num) {
@@ -201,10 +202,12 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
     }
     auto direction = getDirection(list.front().getType());
     if (_nodes[_current]._left == (int)_satisfyPath.back()) {
+        printf("Go to left node [%d] first\n", _satisfyPath.back());
         if (direction == RIGHT) {
             std::reverse(list.begin(), list.end());
         }
     } else if (_nodes[_current]._right == (int)_satisfyPath.back()) {
+        printf("Go to right node [%d] first\n", _satisfyPath.back());
         if (direction == LEFT) {
             std::reverse(list.begin(), list.end());
         }
