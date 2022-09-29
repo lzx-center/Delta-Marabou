@@ -115,6 +115,8 @@ public:
     */
     void performSplit();
     void performSplitUntilReachLeaf();
+    PiecewiseLinearConstraint* generatePLConstraintBySearchTree();
+    void goAsSearchTree();
     /*
       Pop an old split from the stack, and perform a new split as
       needed. Return true if successful, false if the stack is empty.

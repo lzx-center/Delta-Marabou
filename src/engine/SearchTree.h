@@ -110,6 +110,8 @@ public:
 
     SearchTreeNode &getNode(int index);
 
+    ResultTYpe getResult();
+
     size_t size();
 
     void adjustDirection(List<PiecewiseLinearCaseSplit>& list);
@@ -136,14 +138,11 @@ public:
 
     void processCaseSplit(PiecewiseLinearCaseSplit *split);
 
-    void gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split);
+    void gotoChildBySplit(PiecewiseLinearCaseSplit *split);
 
     void gotoChildByDirection(int current, DirectionType direction);
-    /*
-     * 0 : for left
-     * 1 : for right
-     */
-    DirectionType getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists);
+
+    DirectionType getDirection(PiecewiseLinearCaseSplit::SplitType type);
 
     void setNodeInfo(PiecewiseLinearConstraint *pLConstraint);
 

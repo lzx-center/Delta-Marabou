@@ -25,14 +25,25 @@
 class PiecewiseLinearCaseSplit
 {
 public:
+    enum SplitType {
+        RELU_INACTIVE = 0,
+        RELU_ACTIVE,
+        DISJUNCTION_LOWER,
+        DISJUNCTION_UPPER,
+        UNKNOWN
+    };
     int _layer = -1;
     int _node = -1;
+    SplitType _type = UNKNOWN;
     /*
       Store information regarding a bound tightening.
     */
     void storeBoundTightening( const Tightening &tightening );
     const List<Tightening> &getBoundTightenings() const;
 
+    SplitType getType() {return _type;}
+
+    void setType(PiecewiseLinearCaseSplit::SplitType type) { _type = type;}
     /*
       Store information regarding a new equation to be added.
     */

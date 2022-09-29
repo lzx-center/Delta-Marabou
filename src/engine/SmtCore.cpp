@@ -122,15 +122,17 @@ void SmtCore::performSplit() {
         _needToSplit = false;
         _constraintToViolationCount[_constraintForSplitting] = 0;
 
-        int current = _preSearchTree.getCurrentIndex();
-        if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
-            current = _preSearchTree.getNode(current)._left;
-        } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
-            current = _preSearchTree.getNode(current)._right;
+        if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            int current = _preSearchTree.getCurrentIndex();
+            if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
+                current = _preSearchTree.getNode(current)._left;
+            } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
+                current = _preSearchTree.getNode(current)._right;
+            }
+            printf("In performSplit, set current %d\n", current);
+            _preSearchTree.setCurrent(current);
         }
-        _preSearchTree.setCurrent(current);
-
-        _constraintForSplitting = NULL;
+        _constraintForSplitting = nullptr;
         return;
     }
 
@@ -148,7 +150,10 @@ void SmtCore::performSplit() {
     //   1. Obtain the splits.
     //   2. Disable the constraint, so that it is marked as disbaled in the EngineState.
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
-    _preSearchTree.adjustDirection(splits);
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+        _preSearchTree.adjustDirection(splits);
+
+    }
 
     _searchTree.setNodeInfo(_constraintForSplitting);
 
@@ -175,8 +180,8 @@ void SmtCore::performSplit() {
     if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
             _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
-            _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
-            printf("In split\n");
+            printf("In push process, node id: %d\n", _preSearchTree.getCurrentIndex());
+            _preSearchTree.gotoChildBySplit(&(*split));
         }
     }
     // Store the remaining splits on the stack, for later
@@ -202,6 +207,11 @@ void SmtCore::performSplit() {
     }
 
     _constraintForSplitting = NULL;
+
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+        goAsSearchTree();
+    }
+//    printf("Previous search tree after perform split, node [%d]\n", _preSearchTree.getCurrentIndex());
 }
 
 unsigned SmtCore::getStackDepth() const {
@@ -277,8 +287,10 @@ bool SmtCore::popSplit() {
             if (_stackEntryToNode.exists(stackEntry->_id)) {
                 printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
-                _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
-                printf("In pop\n");
+                if (!_preSearchTree.getCurrentNode().isLeaf()) {
+                    printf("In pop process, node id: %d\n", _preSearchTree.getCurrentIndex());
+                    _preSearchTree.gotoChildBySplit(&(*split));
+                }
             }
         }
         SMT_LOG("\tApplying new split - DONE");
@@ -537,26 +549,12 @@ void SmtCore::printAllConstraints() {
     printf("Total size: %d\n", _positionToEliminatedPLConstraints.size() + _positionToPLConstraints.size());
 }
 
+
 void SmtCore::performSplitUntilReachLeaf() {
     int currentIndex = _preSearchTree.getCurrentIndex();
     auto node = &_preSearchTree.getNode(currentIndex);
     while (!node->isLeaf()) {
-        if (!_preSearchTree._satisfyPath.empty()) {
-            if (_preSearchTree.getCurrentIndex() == (int)_preSearchTree._satisfyPath.back()) {
-                _preSearchTree._satisfyPath.pop_back();
-            }
-        }
-        PiecewiseLinearConstraint* plForSplit = nullptr;
-        auto pos = node->getPosition();
-        if (pos._layer == 0) {
-            plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
-        } else {
-            plForSplit = getConstraintByPosition(pos);
-        }
-        assert(plForSplit != nullptr && "constraint is nullptr");
-//        String s; plForSplit->dump(s);
-//        printf("Ready for split: %s", s.ascii());
-        setPiecewiseLinearConstraintForSplit(plForSplit);
+        goAsSearchTree();
         performSplit();
         node = &_preSearchTree.getCurrentNode();
         printf("Center: at node： %d\n", node->_id);
@@ -572,5 +570,27 @@ PiecewiseLinearConstraint *SmtCore::getConstraintByPosition(PiecewiseLinearConst
         return _positionToPLConstraints.at(position);
     }
     return nullptr;
+}
+
+PiecewiseLinearConstraint* SmtCore::generatePLConstraintBySearchTree() {
+    auto node = _preSearchTree.getCurrentNode();
+    printf("In generatePLConstraintBySearchTree, current index [%d]\n",_preSearchTree.getCurrentIndex() );
+    PiecewiseLinearConstraint* plForSplit = nullptr;
+    auto pos = node.getPosition();
+    if (pos._layer == 0) {
+        plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
+    } else {
+        plForSplit = getConstraintByPosition(pos);
+    }
+    return plForSplit;
+}
+
+void SmtCore::goAsSearchTree() {
+    if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) return;
+    if  (_preSearchTree.getCurrentNode().isLeaf()) return;
+    if (_preSearchTree.getResult() == SearchTree::VERIFIED_SAT and _preSearchTree._satisfyPath.empty()) return;
+    auto plForSplit = generatePLConstraintBySearchTree();
+    assert(plForSplit != nullptr && "PiecewiseLinearConstraint is nullptr");
+    setPiecewiseLinearConstraintForSplit(plForSplit);
 }
 

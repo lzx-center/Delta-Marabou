@@ -194,7 +194,7 @@ void Marabou::solveQuery()
         _engine.extractSolution( _inputQuery );
         _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
     }
-    _engine.getCurrentSearchTree().print();
+//    _engine.getCurrentSearchTree().print();
     saveSearchTree("");
 }
 

@@ -304,6 +304,8 @@ bool Engine::solve(unsigned timeoutInSeconds) {
             } else {
                 splitJustPerformed = true;
             }
+//            performSplitUntilReachLeaf();
+//            _smtCore.goAsSearchTree();
         }
         catch (const VariableOutOfBoundDuringOptimizationException &) {
             _tableau->toggleOptimization(false);
@@ -360,8 +362,8 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
-    _smtCore._preSearchTree.print();
-    performSplitUntilReachLeaf();
+//    performSplitUntilReachLeaf();
+    _smtCore.goAsSearchTree();
     bool splitJustPerformed = true;
 
     while ( true )
@@ -528,7 +530,8 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             }
             else
             {
-                performSplitUntilReachLeaf();
+//                performSplitUntilReachLeaf();
+                _smtCore.goAsSearchTree();
                 splitJustPerformed = true;
             }
         }
@@ -2563,9 +2566,8 @@ bool Engine::restoreSmtState(SmtState &smtState) {
             for (PiecewiseLinearConstraint *p: _plConstraints)
                 p->setActiveConstraint(true);
             return false;
-        } else {
-            performSplitUntilReachLeaf();
         }
+        _smtCore.goAsSearchTree();
     }
     return true;
 }
