@@ -171,7 +171,7 @@ void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
     }
     auto direction = getDirection(split->getType());
     gotoChildByDirection(_current, direction);
-    printf("Now go to node: %d\n", _current);
+    printf("Current node is [%d]\n", _current);
 }
 
 void SearchTree::setTreeNodeThreshold(unsigned num) {
@@ -180,10 +180,10 @@ void SearchTree::setTreeNodeThreshold(unsigned num) {
 
 void SearchTree::gotoChildByDirection(int current, SearchTree::DirectionType direction) {
     if (direction == RIGHT) {
-        printf("go to right, current id: %d\n", _current);
+        printf("Current id [%d], now go to right node [%d]\n", _current, _nodes[current]._right);
         _current = _nodes[current]._right;
     } else if (direction == LEFT) {
-        printf("go to left, current id: %d\n", _current);
+        printf("Current id [%d], now go to left node [%d]\n", _current, _nodes[current]._left);
         _current = _nodes[current]._left;
     } else {
         assert(false && "Unknown direction");
@@ -208,8 +208,6 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
         if (direction == LEFT) {
             std::reverse(list.begin(), list.end());
         }
-    } else {
-        printf("Unknown direction to choose\n");
     }
 }
 

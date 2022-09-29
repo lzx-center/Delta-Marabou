@@ -149,6 +149,8 @@ public:
 
     String getStringResultType();
 
+    ResultTYpe getResultType() { return  _resultType; }
+
     void print();
 };
 

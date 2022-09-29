@@ -115,22 +115,22 @@ bool SmtCore::needToSplit() const {
 
 void SmtCore::performSplit() {
     ASSERT(_needToSplit);
-
+    bool isIncremental = Options::get()->getBool(Options::INCREMENTAL_VERIFICATION);
     _numRejectedPhasePatternProposal = 0;
     // Maybe the constraint has already become inactive - if so, ignore
     if (!_constraintForSplitting->isActive()) {
         _needToSplit = false;
         _constraintToViolationCount[_constraintForSplitting] = 0;
-
-        int current = _preSearchTree.getCurrentIndex();
-        if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
-            current = _preSearchTree.getNode(current)._left;
-        } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
-            current = _preSearchTree.getNode(current)._right;
+        if (isIncremental) {
+            int current = _preSearchTree.getCurrentIndex();
+            if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
+                current = _preSearchTree.getNode(current)._left;
+            } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
+                current = _preSearchTree.getNode(current)._right;
+            }
+            _preSearchTree.setCurrent(current);
         }
-        _preSearchTree.setCurrent(current);
-
-        _constraintForSplitting = NULL;
+        _constraintForSplitting = nullptr;
         return;
     }
 
@@ -148,7 +148,9 @@ void SmtCore::performSplit() {
     //   1. Obtain the splits.
     //   2. Disable the constraint, so that it is marked as disbaled in the EngineState.
     List<PiecewiseLinearCaseSplit> splits = _constraintForSplitting->getCaseSplits();
-    _preSearchTree.adjustDirection(splits);
+    if (isIncremental and _preSearchTree.getResultType() == SearchTree::VERIFIED_SAT) {
+        _preSearchTree.adjustDirection(splits);
+    }
 
     _searchTree.setNodeInfo(_constraintForSplitting);
 
@@ -172,11 +174,10 @@ void SmtCore::performSplit() {
     stackEntry->_activeSplit = *split;
 
     _searchTree.processCaseSplit(&(*split));
-    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+    if (isIncremental) {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
             _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
             _preSearchTree.gotoChildBySplit(&(*split));
-            printf("In split\n");
         }
     }
     // Store the remaining splits on the stack, for later
@@ -201,7 +202,7 @@ void SmtCore::performSplit() {
         _statistics->incLongAttribute(Statistics::TOTAL_TIME_SMT_CORE_MICRO, TimeUtils::timePassed(start, end));
     }
 
-    _constraintForSplitting = NULL;
+    _constraintForSplitting = nullptr;
 }
 
 unsigned SmtCore::getStackDepth() const {
@@ -278,7 +279,6 @@ bool SmtCore::popSplit() {
                 printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.gotoChildBySplit(&(*split));
-                printf("In pop\n");
             }
         }
         SMT_LOG("\tApplying new split - DONE");
