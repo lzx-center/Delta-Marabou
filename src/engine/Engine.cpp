@@ -360,8 +360,8 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
-//    performSplitUntilReachLeaf();
     _smtCore.performOneStepInSearchTree();
+    Set<unsigned> visitedLeaf;
     bool splitJustPerformed = false;
     while (true) {
         struct timespec mainLoopEnd = TimeUtils::sampleMicro();
@@ -428,8 +428,9 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-                if (_smtCore._preSearchTree.getResultType() == SearchTree::VERIFIED_SAT and
-                    !_smtCore._preSearchTree._satisfyPath.empty()) {
+                if (_smtCore._preSearchTree.getCurrentNode().isLeaf()) {
+                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
+                } else if (!_smtCore._preSearchTree._satisfyPath.empty()) {
                     _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
                 }
                 continue;
@@ -508,7 +509,6 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                 _exitCode = Engine::UNSAT;
                 return false;
             } else {
-                performSplitUntilReachLeaf();
                 splitJustPerformed = true;
             }
         }
@@ -2540,8 +2540,6 @@ bool Engine::restoreSmtState(SmtState &smtState) {
             for (PiecewiseLinearConstraint *p: _plConstraints)
                 p->setActiveConstraint(true);
             return false;
-        } else {
-            performSplitUntilReachLeaf();
         }
     }
     return true;
