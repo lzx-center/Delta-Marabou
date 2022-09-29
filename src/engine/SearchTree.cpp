@@ -54,7 +54,7 @@ void SearchTree::print() {
     if (_resultType == VERIFIED_SAT) {
         printf("Satisfy path: ");
         for (size_t i = 0; i < _satisfyPath.size(); ++i) {
-            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d -> ", _satisfyPath[i]);
+            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d <- ", _satisfyPath[i]);
         }
     }
     printf("Verified result: %s\n", getStringResultType().ascii());
@@ -70,7 +70,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     auto &node = _nodes[nodeIndex];
     node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
     auto &preNode = _nodes[node._preNode];
-    auto direction = getDirection(preNode.getType(), split->getBoundTightenings());
+    auto direction = getDirection(split->getType());
     if (direction == LEFT) {
         preNode._left = nodeIndex;
     } else if (direction == RIGHT) {
@@ -154,36 +154,22 @@ SearchTreeNode &SearchTree::getCurrentNode() {
 }
 
 SearchTree::DirectionType
-SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists) {
-    if (type == RELU) {
-        bool inActive = true;
-        for (auto tighten: tightenLists) {
-            if (tighten._type != Tightening::UB) {
-                inActive = false;
-                break;
-            }
-        }
-        if (inActive) {
-            return LEFT; // left
-        }
-        return RIGHT; //right
-    } else if (type == DISJUNCTION) {
-        assert(tightenLists.size() == 1 && "tighten size is not equal to 1");
-        if (tightenLists.begin()->_type == Tightening::UB) {
-            return LEFT; // left
-        }
-        return RIGHT; // right
+SearchTree::getDirection(PiecewiseLinearCaseSplit::SplitType type) {
+    if (type == PiecewiseLinearCaseSplit::RELU_INACTIVE || type == PiecewiseLinearCaseSplit::DISJUNCTION_LOWER) {
+        return LEFT;
+    } else if (type == PiecewiseLinearCaseSplit::RELU_ACTIVE || type == PiecewiseLinearCaseSplit::DISJUNCTION_UPPER) {
+        return RIGHT;
     }
     return CANT_JUDGE;
 }
 
 
 
-void SearchTree::gotoChildBySplit(PiecewiseLinearFunctionType type, PiecewiseLinearCaseSplit *split) {
+void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
     if (_nodes[_current].isLeaf()) {
         return;
     }
-    auto direction = getDirection(type, split->getBoundTightenings());
+    auto direction = getDirection(split->getType());
     gotoChildByDirection(_current, direction);
     printf("Now go to node: %d\n", _current);
 }
@@ -213,7 +199,7 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
     if (_satisfyPath.empty()) {
         return;
     }
-    auto direction = getDirection(_nodes[_current].getType(), list.front().getBoundTightenings());
+    auto direction = getDirection(list.front().getType());
     if (_nodes[_current]._left == (int)_satisfyPath.back()) {
         if (direction == RIGHT) {
             std::reverse(list.begin(), list.end());

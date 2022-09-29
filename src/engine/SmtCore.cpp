@@ -175,7 +175,7 @@ void SmtCore::performSplit() {
     if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
             _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
-            _preSearchTree.gotoChildBySplit(_constraintForSplitting->getType(), &(*split));
+            _preSearchTree.gotoChildBySplit(&(*split));
             printf("In split\n");
         }
     }
@@ -277,7 +277,7 @@ bool SmtCore::popSplit() {
             if (_stackEntryToNode.exists(stackEntry->_id)) {
                 printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
                 _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
-                _preSearchTree.gotoChildBySplit(_preSearchTree.getCurrentNode().getType(), &(*split));
+                _preSearchTree.gotoChildBySplit(&(*split));
                 printf("In pop\n");
             }
         }
