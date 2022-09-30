@@ -17,10 +17,13 @@ public:
     enum NodeType {
         SAT = 0,
         UNSAT,
-        PATH_NODE
+        PATH_NODE,
+        LAZY_NODE //represent the subtree of this node is not stored
     };
+
     explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
-                                                               _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN) {}
+                                          _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN) {}
+
     int _id;
     NodeType _nodeType;
     int _conflictVariable;
@@ -31,20 +34,33 @@ public:
     int _left, _right;
     int _preNode, _plLayer, _plNode;
     std::vector<unsigned> _basicVariables;
-    std::vector<unsigned > _satisfyPath;
     PiecewiseLinearFunctionType _plType;
 
+    PiecewiseLinearConstraint::Position getPosition();
+
     void setPosition(PiecewiseLinearConstraint::Position &position);
+
     void setType(PiecewiseLinearFunctionType type);
+
     PiecewiseLinearFunctionType getType();
+
+    List<unsigned> getBasicVariableLists();
+
     bool isLeaf();
+
     String getStringPlType() const;
+
     String getStringNodeType() const;
+
     NodeType getNodeType();
+
     static String getTypeString(PiecewiseLinearFunctionType type);
+
     void print();
+
 private:
     friend class boost::serialization::access;
+
     friend class SearchTree;
 
     template<class Archive>
@@ -53,7 +69,6 @@ private:
         if (version >= 0) {
             ar & _plLayer & _plNode & _conflictVariable;
             ar & _left & _right & _preNode & _id & _nodeType & _basicVariables & _plType;
-            ar & _satisfyPath;
         }
     }
 };
@@ -70,36 +85,42 @@ public:
         RIGHT,
         CANT_JUDGE
     };
+    std::vector<unsigned> _satisfyPath;
 private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
-    std::map<std::pair<int, int>, int> _mapSplitToNode;
+    std::map<PiecewiseLinearConstraint::Position, int> _mapPositionToNode;
     ResultTYpe _resultType;
+    unsigned _nodeNumThreshold;
 
     friend class boost::serialization::access;
+
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         // serialize base class information
         if (version >= 0) {
-            ar & _root & _current & _nodes & _resultType;
+            ar & _root & _current & _nodes & _resultType & _nodeNumThreshold & _satisfyPath;
         }
     }
 
 public:
     SearchTree();
 
+    void setTreeNodeThreshold(unsigned num);
 
-    SearchTreeNode& getNode(int index);
+    SearchTreeNode &getNode(int index);
 
     size_t size();
 
-    void markUnsatLeaf(const Set<unsigned>& varSet, unsigned conflict);
+    void adjustDirection(List<PiecewiseLinearCaseSplit>& list);
+
+    void markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict);
 
     void setVerifiedResult(ResultTYpe resultTYpe);
 
-    void markSatLeaf(const Set<unsigned>& varSet);
+    void markSatLeaf(const Set<unsigned> &varSet);
 
-    SearchTreeNode& getCurrentNode();
+    SearchTreeNode &getCurrentNode();
 
     size_t newNode();
 
@@ -107,22 +128,28 @@ public:
         _current = index;
     }
 
-    void saveToFile(const String& filePath) const;
+    void saveToFile(const String &filePath) const;
 
-    void loadFromFile(const String& filePath);
+    void loadFromFile(const String &filePath);
 
     int getCurrentIndex();
 
-    void processCaseSplit(PiecewiseLinearCaseSplit* split);
+    void processCaseSplit(PiecewiseLinearCaseSplit *split);
+
+    void gotoChildBySplit( PiecewiseLinearCaseSplit *split);
+
+    void gotoChildByDirection(int current, DirectionType direction);
     /*
      * 0 : for left
      * 1 : for right
      */
-    DirectionType getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists);
+    DirectionType getDirection(PiecewiseLinearCaseSplit::SplitType type);
 
-    void setNodeInfo(PiecewiseLinearConstraint* pLConstraint);
+    void setNodeInfo(PiecewiseLinearConstraint *pLConstraint);
 
     String getStringResultType();
+
+    ResultTYpe getResultType() { return  _resultType; }
 
     void print();
 };

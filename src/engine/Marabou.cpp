@@ -293,8 +293,6 @@ void Marabou::incrementalRun() {
     loadPreSearchTree("");
     struct timespec start = TimeUtils::sampleMicro();
     _engine.renameSearchTreeVariableInIncrementalProcess();
-    auto& _searchTree = _engine.getPreSearchTree();
-    _searchTree.print();
     prepareInputQuery();
     solveQuery();
 

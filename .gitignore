@@ -10,3 +10,4 @@ latex/
 .idea/
 build
 resources/nnet/coav
+resources/nnet/

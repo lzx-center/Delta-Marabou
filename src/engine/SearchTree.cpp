@@ -9,11 +9,17 @@
 
 size_t SearchTree::newNode() {
     auto size = _nodes.size();
+    if (size == _nodeNumThreshold) {
+        return -1;
+    }
     _nodes.emplace_back(SearchTreeNode(size));
+    if (size == _nodeNumThreshold - 1) {
+        _nodes.back()._nodeType = SearchTreeNode::LAZY_NODE;
+    }
     return size;
 }
 
-SearchTree::SearchTree() : _root(-1), _current(-1), _resultType(NOT_VERIFIED) {
+SearchTree::SearchTree() : _root(-1), _current(-1), _resultType(NOT_VERIFIED), _nodeNumThreshold(1000000000) {
     auto index = newNode();
     _root = _current = index;
 }
@@ -45,16 +51,26 @@ void SearchTree::print() {
     for (auto n: _nodes) {
         n.print();
     }
+    if (_resultType == VERIFIED_SAT) {
+        printf("Satisfy path: ");
+        for (size_t i = 0; i < _satisfyPath.size(); ++i) {
+            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d <- ", _satisfyPath[i]);
+        }
+    }
     printf("Verified result: %s\n", getStringResultType().ascii());
 }
 
 
 void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
     int nodeIndex = newNode();
+    if (nodeIndex == -1) {
+        _current = -1;
+        return;
+    }
     auto &node = _nodes[nodeIndex];
-    node._preNode = _mapSplitToNode[{split->_layer, split->_node}];
+    node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
     auto &preNode = _nodes[node._preNode];
-    auto direction = getDirection(preNode.getType(), split->getBoundTightenings());
+    auto direction = getDirection(split->getType());
     if (direction == LEFT) {
         preNode._left = nodeIndex;
     } else if (direction == RIGHT) {
@@ -67,10 +83,11 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
 }
 
 void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
+    if (_current == -1) return;
     auto &node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
     node.setType(pLConstraint->getType());
-    _mapSplitToNode[{node._plLayer, node._plNode}] = _current;
+    _mapPositionToNode[pLConstraint->getPosition()] = _current;
 }
 
 int SearchTree::getCurrentIndex() {
@@ -78,6 +95,9 @@ int SearchTree::getCurrentIndex() {
 }
 
 void SearchTree::markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict) {
+    if (_current == -1) {
+        return;
+    }
     auto &node = _nodes[_current];
     assert(node._plType == UNKNOWN);
     _resultType = VERIFIED_SAT;
@@ -103,11 +123,8 @@ void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
     int current = node._id;
     while (current != -1) {
         stack.push_back(current);
+        _satisfyPath.push_back(current);
         current = _nodes[current]._preNode;
-    }
-    node._satisfyPath.reserve(stack.size());
-    for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
-        node._satisfyPath.push_back(*it);
     }
 }
 
@@ -137,27 +154,64 @@ SearchTreeNode &SearchTree::getCurrentNode() {
 }
 
 SearchTree::DirectionType
-SearchTree::getDirection(PiecewiseLinearFunctionType type, const List<Tightening> &tightenLists) {
-    if (type == RELU) {
-        bool inActive = true;
-        for (auto tighten: tightenLists) {
-            if (tighten._type != Tightening::UB) {
-                inActive = false;
-                break;
-            }
-        }
-        if (inActive) {
-            return LEFT; // left
-        }
-        return RIGHT; //right
-    } else if (type == DISJUNCTION) {
-        assert(tightenLists.size() == 1 && "tighten size is not equal to 1");
-        if (tightenLists.begin()->_type == Tightening::UB) {
-            return LEFT; // left
-        }
-        return RIGHT; // right
+SearchTree::getDirection(PiecewiseLinearCaseSplit::SplitType type) {
+    if (type == PiecewiseLinearCaseSplit::RELU_INACTIVE || type == PiecewiseLinearCaseSplit::DISJUNCTION_LOWER) {
+        return LEFT;
+    } else if (type == PiecewiseLinearCaseSplit::RELU_ACTIVE || type == PiecewiseLinearCaseSplit::DISJUNCTION_UPPER) {
+        return RIGHT;
     }
     return CANT_JUDGE;
+}
+
+
+
+void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
+    if (_nodes[_current].isLeaf()) {
+        return;
+    }
+    auto direction = getDirection(split->getType());
+    gotoChildByDirection(_current, direction);
+    printf("Current node is [%d]\n", _current);
+    _nodes[_current].print();
+}
+
+void SearchTree::setTreeNodeThreshold(unsigned num) {
+    _nodeNumThreshold = num;
+}
+
+void SearchTree::gotoChildByDirection(int current, SearchTree::DirectionType direction) {
+    if (direction == RIGHT) {
+        printf("Current id [%d], now go to right node [%d]\n", _current, _nodes[current]._right);
+        _current = _nodes[current]._right;
+    } else if (direction == LEFT) {
+        printf("Current id [%d], now go to left node [%d]\n", _current, _nodes[current]._left);
+        _current = _nodes[current]._left;
+    } else {
+        assert(false && "Unknown direction");
+    }
+    // Means that there's no son node in first verification
+    if (_current == -1) {
+        _current = current;
+        _nodes[current]._nodeType = SearchTreeNode::LAZY_NODE;
+    }
+}
+
+void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
+    if (_satisfyPath.empty()) {
+        return;
+    }
+    auto direction = getDirection(list.front().getType());
+    if (_nodes[_current]._left == (int)_satisfyPath.back()) {
+        printf("Go to left node [%d] first\n", _satisfyPath.back());
+        if (direction == RIGHT) {
+            std::reverse(list.begin(), list.end());
+        }
+    } else if (_nodes[_current]._right == (int)_satisfyPath.back()) {
+        printf("Go to right node [%d] first\n", _satisfyPath.back());
+        if (direction == LEFT) {
+            std::reverse(list.begin(), list.end());
+        }
+    }
 }
 
 
@@ -170,6 +224,8 @@ void SearchTreeNode::print() {
         printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
                _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
         );
+    } else {
+        printf("Previous node: %d\n", _preNode);
     }
     if (_nodeType == UNSAT) {
         printf("Conflict variable: %d\n", _conflictVariable);
@@ -181,13 +237,11 @@ void SearchTreeNode::print() {
         }
         printf("\n");
     }
-    if (_nodeType == SAT) {
-        printf("Satisfy path: ");
-        for (size_t i = 0; i < _satisfyPath.size(); ++i) {
-            printf(i == _satisfyPath.size() - 1 ? "%d\n" : "%d -> ", _satisfyPath[i]);
-        }
-    }
     printf("\n");
+}
+
+PiecewiseLinearConstraint::Position SearchTreeNode::getPosition() {
+    return PiecewiseLinearConstraint::Position(_plLayer, _plNode);
 }
 
 void SearchTreeNode::setPosition(PiecewiseLinearConstraint::Position &position) {
@@ -197,7 +251,7 @@ void SearchTreeNode::setPosition(PiecewiseLinearConstraint::Position &position) 
 
 
 bool SearchTreeNode::isLeaf() {
-    return _nodeType == SAT or _nodeType == UNSAT;
+    return _nodeType == SAT or _nodeType == UNSAT or _nodeType == LAZY_NODE;
 }
 
 void SearchTreeNode::setType(PiecewiseLinearFunctionType type) {
@@ -249,10 +303,21 @@ String SearchTreeNode::getStringNodeType() const {
         case PATH_NODE:
             s = "path_node";
             break;
+        case LAZY_NODE:
+            s = "lazy_node";
+            break;
     }
     return s;
 }
 
 SearchTreeNode::NodeType SearchTreeNode::getNodeType() {
     return _nodeType;
+}
+
+List<unsigned> SearchTreeNode::getBasicVariableLists() {
+    List<unsigned> ret;
+    for (auto &v : _basicVariables) {
+        ret.append(v);
+    }
+    return ret;
 }

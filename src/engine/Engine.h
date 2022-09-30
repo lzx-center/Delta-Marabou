@@ -77,6 +77,7 @@ public:
     */
     bool solve( unsigned timeoutInSeconds = 0 );
     bool incrementalSolve( unsigned timeoutInSeconds = 0);
+    void setBasicVariables();
     /*
       Minimize the cost function with respect to the current set of linear constraints.
     */
@@ -190,7 +191,7 @@ public:
       Pick the piecewise linear constraint for splitting
     */
     PiecewiseLinearConstraint *pickSplitPLConstraint( DivideStrategy strategy );
-
+    void performSplitUntilReachLeaf();
     /*
       Call-back from QueryDividers
       Pick the piecewise linear constraint for splitting
@@ -215,6 +216,7 @@ public:
      */
     void applyBoundTightenings();
 
+    PiecewiseLinearConstraint* generateInputDisjunctiveConstraint(int inputVariable);
     /*
       Apply all bound tightenings (row and matrix-based) in
       the queue.

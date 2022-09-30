@@ -83,10 +83,14 @@ public:
         return _scoreTracker->topUnfixed();
     }
 
+    PiecewiseLinearConstraint *getConstraintByPosition(PiecewiseLinearConstraint::Position position) const;
+
     /*
       Inform the SMT core that a PL constraint is violated.
     */
     void reportViolatedConstraint( PiecewiseLinearConstraint *constraint );
+
+    void setPiecewiseLinearConstraintForSplit( PiecewiseLinearConstraint *constraint );
 
     /*
       Get the number of times a specific PL constraint has been reported as
@@ -110,7 +114,9 @@ public:
       splitting. Update bounds, add equations and update the stack.
     */
     void performSplit();
-
+    void performSplitUntilReachLeaf();
+    void setConstraintForSplit();
+    void performOneStepInSearchTree();
     /*
       Pop an old split from the stack, and perform a new split as
       needed. Return true if successful, false if the stack is empty.
@@ -172,7 +178,14 @@ public:
     bool checkSkewFromDebuggingSolution();
     bool splitAllowsStoredSolution( const PiecewiseLinearCaseSplit &split, String &error ) const;
 
+    void addConstraint(PiecewiseLinearConstraint* piecewiseLinearConstraint);
+    void addEliminatedConstraint(PiecewiseLinearConstraint* piecewiseLinearConstraint);
+
+    void printAllConstraints();
 private:
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToPLConstraints;
+    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToEliminatedPLConstraints;
+
     /*
       Valid splits that were implied by level 0 of the stack.
     */
@@ -187,7 +200,7 @@ private:
       The case-split stack.
     */
     List<SmtStackEntry *> _stack;
-
+    Map<int, unsigned > _stackEntryToNode;
     /*
      * map stack entry to node index
      */

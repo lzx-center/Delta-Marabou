@@ -59,6 +59,10 @@ public:
 
     unsigned getOldIndex( unsigned newIndex) const;
 
+    void printAllEliminateConstraints();
+
+    List<PiecewiseLinearConstraint* >& getEliminatedConstraintsList();
+
 private:
 
     void freeMemoryIfNeeded();
@@ -167,7 +171,7 @@ private:
     */
     Map<unsigned, unsigned> _mergedVariables;
 
-    Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint* > _eliminateConstraint;
+    List<PiecewiseLinearConstraint* > _eliminateConstraints;
     /*
       Mapping of old variable indices to new varibale indices, if
       indices were changed during preprocessing.

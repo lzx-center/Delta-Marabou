@@ -21,17 +21,29 @@
 #include "MString.h"
 #include "Pair.h"
 #include "Tightening.h"
-
+#include "PiecewiseLinearCaseSplit.h"
 class PiecewiseLinearCaseSplit
 {
 public:
+    enum SplitType {
+        RELU_INACTIVE = 0,
+        RELU_ACTIVE,
+        DISJUNCTION_LOWER,
+        DISJUNCTION_UPPER,
+        UNKNOWN
+    };
     int _layer = -1;
     int _node = -1;
+    SplitType _type = UNKNOWN;
     /*
       Store information regarding a bound tightening.
     */
     void storeBoundTightening( const Tightening &tightening );
     const List<Tightening> &getBoundTightenings() const;
+
+    SplitType getType() {return _type;}
+
+    void setType(PiecewiseLinearCaseSplit::SplitType type) { _type = type;}
 
     /*
       Store information regarding a new equation to be added.
@@ -55,7 +67,7 @@ public:
     */
     void updateVariableIndex( unsigned oldIndex, unsigned newIndex );
 
-    void setPostion(int layer, int node) {
+    void setPosition(int layer, int node) {
         _layer = layer;
         _node = node;
     }

@@ -26,11 +26,16 @@
 */
 struct SmtStackEntry
 {
+    static int index;
 public:
+    SmtStackEntry() {
+        _id = index ++;
+    }
     PiecewiseLinearCaseSplit _activeSplit;
     List<PiecewiseLinearCaseSplit> _impliedValidSplits;
     List<PiecewiseLinearCaseSplit> _alternativeSplits;
     EngineState *_engineState;
+    int _id;
 
     /*
       Create a copy of the SmtStackEntry on the stack and returns a pointer to
@@ -42,6 +47,7 @@ public:
     {
         SmtStackEntry *copy = new SmtStackEntry();
 
+        copy->_id = _id;
         copy->_activeSplit = _activeSplit;
         copy->_impliedValidSplits = _impliedValidSplits;
         copy->_alternativeSplits = _alternativeSplits;

@@ -120,7 +120,7 @@ public:
 
         bool operator < (const Position& b) const{
             if (_layer == b._layer) {
-                return _node == b._node;
+                return _node > b._node;
             }
             return _layer > b._layer;
         }

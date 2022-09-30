@@ -333,6 +333,7 @@ void Tableau::assignIndexToBasicVariable( unsigned variable, unsigned index )
 
 void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
 {
+    printf("basic variable size: %d, initial variable size: %d\n", _basicVariables.size(), initialBasicVariables.size());
     _basicVariables.clear();
 
     // Assign the basic indices
@@ -366,7 +367,6 @@ void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
 
     // Factorize the basis
     _basisFactorization->obtainFreshBasis();
-
     // Compute assignment
     computeAssignment();
 }

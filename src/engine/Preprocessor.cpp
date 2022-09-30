@@ -911,7 +911,7 @@ void Preprocessor::eliminateVariables()
                     removeConstraintFromTopologicalOrder( *constraint );
             if ((*constraint)->getType() == RELU) {
                 auto copyConstraint = (*constraint)->duplicateConstraint();
-                _eliminateConstraint[copyConstraint->getPosition()] = copyConstraint;
+                _eliminateConstraints.append(copyConstraint);
             }
             delete *constraint;
             *constraint = NULL;
@@ -920,7 +920,6 @@ void Preprocessor::eliminateVariables()
         else
             ++constraint;
     }
-
     // Let the remaining piecewise-lienar constraints know of any changes in indices.
     for ( const auto &constraint : constraints )
     {
@@ -1074,6 +1073,19 @@ unsigned Preprocessor::getOldIndex(unsigned int newIndex) const {
     if (_newIndexToOldIndex.exists(newIndex))
         return _newIndexToOldIndex.at(newIndex);
     return newIndex;
+}
+
+
+void Preprocessor::printAllEliminateConstraints() {
+    printf("All eliminated constraint size: %d\n", _eliminateConstraints.size());
+    for (auto& item : _eliminateConstraints) {
+        String s; item->dump(s);
+        printf("Eliminate:\n%s", s.ascii());
+    }
+}
+
+List<PiecewiseLinearConstraint *> &Preprocessor::getEliminatedConstraintsList() {
+    return _eliminateConstraints;
 }
 
 //

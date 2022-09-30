@@ -547,7 +547,8 @@ PiecewiseLinearCaseSplit ReluConstraint::getInactiveSplit() const
     PiecewiseLinearCaseSplit inactivePhase;
     inactivePhase.storeBoundTightening( Tightening( _b, 0.0, Tightening::UB ) );
     inactivePhase.storeBoundTightening( Tightening( _f, 0.0, Tightening::UB ) );
-    inactivePhase.setPostion(_position._layer, _position._node);
+    inactivePhase.setPosition(_position._layer, _position._node);
+    inactivePhase.setType(PiecewiseLinearCaseSplit::RELU_INACTIVE);
     return inactivePhase;
 }
 
@@ -571,7 +572,8 @@ PiecewiseLinearCaseSplit ReluConstraint::getActiveSplit() const
         activeEquation.setScalar( 0 );
         activePhase.addEquation( activeEquation );
     }
-    activePhase.setPostion(_position._layer, _position._node);
+    activePhase.setPosition(_position._layer, _position._node);
+    activePhase.setType(PiecewiseLinearCaseSplit::RELU_ACTIVE);
     return activePhase;
 }
 
@@ -607,7 +609,7 @@ void ReluConstraint::dump( String &output ) const
                        existsLowerBound( _b ) ? Stringf( "%lf", getLowerBound( _b ) ).ascii() : "-inf",
                        existsUpperBound( _b ) ? Stringf( "%lf", getUpperBound( _b ) ).ascii() : "inf" );
 
-    output += Stringf( "f in [%s, %s]",
+    output += Stringf( "f in [%s, %s]\n",
                        existsLowerBound( _f ) ? Stringf( "%lf", getLowerBound( _f ) ).ascii() : "-inf",
                        existsUpperBound( _f ) ? Stringf( "%lf", getUpperBound( _f ) ).ascii() : "inf" );
 
