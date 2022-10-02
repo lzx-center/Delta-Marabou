@@ -121,6 +121,8 @@ void SmtCore::performSplit() {
     if (!_constraintForSplitting->isActive()) {
         _needToSplit = false;
         _constraintToViolationCount[_constraintForSplitting] = 0;
+        String s; _constraintForSplitting->dump(s);
+
         if (isIncremental) {
             int current = _preSearchTree.getCurrentIndex();
             if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_INACTIVE) {
@@ -128,10 +130,14 @@ void SmtCore::performSplit() {
             } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
                 current = _preSearchTree.getNode(current)._right;
             }
-            if (current == (int)_preSearchTree._satisfyPath.back()) {
-                _preSearchTree._satisfyPath.pop_back();
+            if (!_preSearchTree._satisfyPath.empty()) {
+                if (current == (int)_preSearchTree._satisfyPath.back()) {
+                    _preSearchTree._satisfyPath.pop_back();
+                }
             }
             _preSearchTree.setCurrent(current);
+            performOneStepInSearchTree();
+            return;
         }
         _constraintForSplitting = nullptr;
         return;

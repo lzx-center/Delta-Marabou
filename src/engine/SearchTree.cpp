@@ -221,9 +221,14 @@ void SearchTreeNode::print() {
             _id, getStringNodeType().ascii()
     );
     if (_nodeType == PATH_NODE) {
-        printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
-               _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
-        );
+        if (_preNode == -1)
+            printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d\n",
+                   _plLayer, _plNode, getStringPlType().ascii(), _left, _right
+            );
+        else
+            printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
+                   _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
+            );
     } else {
         printf("Previous node: %d\n", _preNode);
     }
