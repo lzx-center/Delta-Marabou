@@ -428,11 +428,15 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-//                if (_smtCore._preSearchTree.getCurrentNode().isLeaf()) {
-//                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
-//                } else if (!_smtCore._preSearchTree._satisfyPath.empty()) {
-//                    _basisRestor ationRequired = Engine::STRONG_RESTORATION_NEEDED;
-//                }
+                auto& currentNode = _smtCore._preSearchTree.getCurrentNode();
+                printf("Node after perform is [%d], type is : %s\n", currentNode._id, currentNode.getStringNodeType().ascii());
+                if (currentNode.getNodeType() == SearchTreeNode::SAT || currentNode.getNodeType() == SearchTreeNode::UNSAT) {
+                    printf("haha!!!!!!\n");
+                    //TODO: change current basic variable to given basic Variable List, which name is targetVariableList
+                    auto targetVariableList = currentNode.getBasicVariableLists();
+                    // The follow command throws exception
+                     _tableau->initializeTableau(targetVariableList);
+                }
                 continue;
             }
 
