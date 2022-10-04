@@ -290,7 +290,7 @@ void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
 }
 
 void Marabou::incrementalRun() {
-    loadPreSearchTree("");
+    loadPreSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
     struct timespec start = TimeUtils::sampleMicro();
     _engine.renameSearchTreeVariableInIncrementalProcess();
     prepareInputQuery();
