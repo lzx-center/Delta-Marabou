@@ -356,7 +356,6 @@ void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
         }
     }
     ASSERT( nonBasicIndex == _n - _m );
-    printf("test!@!\n");
     // Set non-basics to lower bounds, don't update basics - they will be computed later
     for ( unsigned i = 0; i < _n - _m; ++i )
     {

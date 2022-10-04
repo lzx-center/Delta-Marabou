@@ -362,8 +362,10 @@ void SparseFTFactorization::factorizeBasis()
     }
     catch ( const BasisFactorizationError &e )
     {
-        if ( e.getCode() == BasisFactorizationError::GAUSSIAN_ELIMINATION_FAILED )
+        printf("%s\n", e.getUserMessage());
+        if ( e.getCode() == BasisFactorizationError::GAUSSIAN_ELIMINATION_FAILED ) {
             throw MalformedBasisException();
+        }
         else
             throw e;
     }
