@@ -90,6 +90,7 @@ private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
     std::map<PiecewiseLinearConstraint::Position, int> _mapPositionToNode;
+    std::map<int, unsigned> _stackEntryToTreeNode;
     ResultTYpe _resultType;
     unsigned _nodeNumThreshold;
 
@@ -107,6 +108,16 @@ public:
     SearchTree();
 
     void setTreeNodeThreshold(unsigned num);
+
+    void mapStackEntryToCurrentNode(int id) {
+        _stackEntryToTreeNode[id] = _current;
+    }
+
+    int getNodeByStackEntry(int id) {
+        if (_stackEntryToTreeNode.count(id))
+            return _stackEntryToTreeNode[id];
+        return -1;
+    }
 
     SearchTreeNode &getNode(int index);
 

@@ -68,7 +68,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
         return;
     }
     auto &node = _nodes[nodeIndex];
-    node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
+    node._preNode = _current;
     auto &preNode = _nodes[node._preNode];
     auto direction = getDirection(split->getType());
     if (direction == LEFT) {

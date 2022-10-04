@@ -427,11 +427,11 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             // Perform any SmtCore-initiated case splits
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
-                splitJustPerformed = true;
-//                if (_smtCore._preSearchTree.getCurrentNode().isLeaf()) {
-//                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
-//                } else if (!_smtCore._preSearchTree._satisfyPath.empty()) {
-//                    _basisRestor ationRequired = Engine::STRONG_RESTORATION_NEEDED;
+//                splitJustPerformed = true;
+//                auto &node = _smtCore._preSearchTree.getCurrentNode();
+//                if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
+//                    auto list = node.getBasicVariableLists();
+//                    _tableau->initializeTableau(list);
 //                }
                 continue;
             }

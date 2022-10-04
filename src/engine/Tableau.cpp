@@ -333,7 +333,6 @@ void Tableau::assignIndexToBasicVariable( unsigned variable, unsigned index )
 
 void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
 {
-    printf("basic variable size: %d, initial variable size: %d\n", _basicVariables.size(), initialBasicVariables.size());
     _basicVariables.clear();
 
     // Assign the basic indices
@@ -357,7 +356,7 @@ void Tableau::initializeTableau( const List<unsigned> &initialBasicVariables )
         }
     }
     ASSERT( nonBasicIndex == _n - _m );
-
+    printf("test!@!\n");
     // Set non-basics to lower bounds, don't update basics - they will be computed later
     for ( unsigned i = 0; i < _n - _m; ++i )
     {
