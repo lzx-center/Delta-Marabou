@@ -427,7 +427,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             // Perform any SmtCore-initiated case splits
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
-//                splitJustPerformed = true;
+                splitJustPerformed = true;
 //                auto &node = _smtCore._preSearchTree.getCurrentNode();
 //                if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
 //                    auto list = node.getBasicVariableLists();
