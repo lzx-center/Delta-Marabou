@@ -317,8 +317,7 @@ void Marabou::loadPreSearchTree(String path) {
 }
 
 void Marabou::saveSearchTree(String path) {
-    String networkFilePath = path.length() ? path : Options::get()->getString( Options::INPUT_FILE_PATH );
-    String networkSearchTree = networkFilePath + String(".searchTree");
+    String networkSearchTree = path.length() ? path : Options::get()->getString( Options::INPUT_FILE_PATH ) + String(".searchTree");
     if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         networkSearchTree += String(".incremental");
     }
