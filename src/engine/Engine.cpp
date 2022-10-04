@@ -428,11 +428,11 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-                auto &node = _smtCore._preSearchTree.getCurrentNode();
-                if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
-                    auto list = node.getBasicVariableLists();
-                    _tableau->initializeTableau(list);
-                }
+//                auto &node = _smtCore._preSearchTree.getCurrentNode();
+//                if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
+//                    auto list = node.getBasicVariableLists();
+//                    _tableau->initializeTableau(list);
+//                }
                 continue;
             }
 
