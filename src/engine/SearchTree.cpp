@@ -214,6 +214,14 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
     }
 }
 
+void SearchTree::markPathNode(const Set<unsigned int> &varSet) {
+    auto& node = getCurrentNode();
+    node._nodeType = SearchTreeNode::PATH_NODE;
+    for (auto& v : varSet) {
+        node._basicVariables.push_back(v);
+    }
+}
+
 
 void SearchTreeNode::print() {
     printf(

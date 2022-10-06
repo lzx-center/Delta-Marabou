@@ -119,6 +119,8 @@ public:
         return -1;
     }
 
+    void markPathNode(const Set<unsigned> &varSet);
+
     SearchTreeNode &getNode(int index);
 
     size_t size();
