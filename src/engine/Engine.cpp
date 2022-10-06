@@ -138,6 +138,8 @@ bool Engine::solve(unsigned timeoutInSeconds) {
         plConstraint->registerBoundManager(&_boundManager);
     }
 
+    _smtCore._searchTree.markPathNode(getBasicVariable());
+
     if (_solveWithMILP)
         return solveWithMILPEncoding(timeoutInSeconds);
 
@@ -338,7 +340,22 @@ bool Engine::solve(unsigned timeoutInSeconds) {
 bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
     SignalHandler::getInstance()->initialize();
     SignalHandler::getInstance()->registerClient(this);
-
+    Set<unsigned> st;
+    printf("Current:\n");
+    for (auto & v : getBasicVariable()) {
+        printf("%d ", v);
+        st.insert(v);
+    }
+    printf("\npre Search tree:\n");
+    for (auto& v : _smtCore._preSearchTree.getNode(0)._basicVariables) {
+        printf("%d ", v);
+    }
+    printf("\nNot equal:\n");
+    for (auto& v : _smtCore._preSearchTree.getNode(0)._basicVariables) {
+        if (!st.exists(v))
+            printf("%d ", v);
+    }
+    printf("\n");
     // Register the boundManager with all the PL constraints
     for (auto &plConstraint: _plConstraints) {
         plConstraint->registerBoundManager(&_boundManager);
