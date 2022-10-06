@@ -4,13 +4,14 @@
 #pragma once
 #ifndef MARABOU_SEARCHTREE_H
 #define MARABOU_SEARCHTREE_H
-
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include "vector"
 #include "PiecewiseLinearConstraint.h"
 #include "string"
+#include "Debug.h"
+#define TREE_LOG(x, ...) LOG(GlobalConfiguration::TREE_LOGGING, "Engine: %s\n", x)
 
 struct SearchTreeNode {
 public:
@@ -90,6 +91,7 @@ private:
     int _root, _current;
     std::vector<SearchTreeNode> _nodes;
     std::map<PiecewiseLinearConstraint::Position, int> _mapPositionToNode;
+    std::map<int, unsigned> _stackEntryToTreeNode;
     ResultTYpe _resultType;
     unsigned _nodeNumThreshold;
 
@@ -107,6 +109,16 @@ public:
     SearchTree();
 
     void setTreeNodeThreshold(unsigned num);
+
+    void mapStackEntryToCurrentNode(int id) {
+        _stackEntryToTreeNode[id] = _current;
+    }
+
+    int getNodeByStackEntry(int id) {
+        if (_stackEntryToTreeNode.count(id))
+            return _stackEntryToTreeNode[id];
+        return -1;
+    }
 
     SearchTreeNode &getNode(int index);
 

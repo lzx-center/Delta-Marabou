@@ -274,9 +274,10 @@ void GaussianEliminator::choosePivot()
 
         if ( FloatUtils::isZero( maxInColumn ) )
         {
-            if ( !found )
+            if ( !found ) {
                 throw BasisFactorizationError( BasisFactorizationError::GAUSSIAN_ELIMINATION_FAILED,
                                                "Have a zero column" );
+            }
 
         }
 
@@ -312,9 +313,11 @@ void GaussianEliminator::choosePivot()
 
     GAUSSIAN_LOG( Stringf( "Choose pivot selected a pivot: V[%u,%u] = %lf (cost %u)", _vPivotRow, _vPivotColumn, _luFactors->_V[_vPivotRow*_m + _vPivotColumn], minimalCost ).ascii() );
 
-    if ( !found )
+    if ( !found ) {
         throw BasisFactorizationError( BasisFactorizationError::GAUSSIAN_ELIMINATION_FAILED,
                                        "Couldn't find a pivot" );
+    }
+
 }
 
 void GaussianEliminator::eliminate()

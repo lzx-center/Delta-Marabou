@@ -128,10 +128,14 @@ void SmtCore::performSplit() {
             } else if (_constraintForSplitting->getPhaseStatus() == RELU_PHASE_ACTIVE) {
                 current = _preSearchTree.getNode(current)._right;
             }
-            if (current == (int)_preSearchTree._satisfyPath.back()) {
-                _preSearchTree._satisfyPath.pop_back();
+            if (!_preSearchTree._satisfyPath.empty()) {
+                if (current == (int)_preSearchTree._satisfyPath.back()) {
+                    _preSearchTree._satisfyPath.pop_back();
+                }
             }
             _preSearchTree.setCurrent(current);
+            performOneStepInSearchTree();
+            return;
         }
         _constraintForSplitting = nullptr;
         return;
@@ -176,10 +180,12 @@ void SmtCore::performSplit() {
     _engine->applySplit(*split);
     stackEntry->_activeSplit = *split;
 
+    _searchTree.mapStackEntryToCurrentNode(stackEntry->_id);
     _searchTree.processCaseSplit(&(*split));
     if (isIncremental) {
         if (!_preSearchTree.getCurrentNode().isLeaf()) {
-            _stackEntryToNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
+//            _stackEntryToPreTreeNode[stackEntry->_id] = _preSearchTree.getCurrentIndex();
+            _preSearchTree.mapStackEntryToCurrentNode(stackEntry->_id);
             _preSearchTree.gotoChildBySplit(&(*split));
         }
     }
@@ -279,11 +285,12 @@ bool SmtCore::popSplit() {
         _context.push();
         _engine->applySplit(*split);
 
+        _searchTree.setCurrent(_searchTree.getNodeByStackEntry(stackEntry->_id));
         _searchTree.processCaseSplit(&(*split));
         if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
-            if (_stackEntryToNode.exists(stackEntry->_id)) {
-                printf("Now go back to node %d\n", _stackEntryToNode[stackEntry->_id]);
-                _preSearchTree.setCurrent(_stackEntryToNode[stackEntry->_id]);
+            if (_preSearchTree.getNodeByStackEntry(stackEntry->_id) != -1) {
+                _preSearchTree.setCurrent(_preSearchTree.getNodeByStackEntry(stackEntry->_id));
+                TREE_LOG("Now go back to node %d\n",_preSearchTree.getNodeByStackEntry(stackEntry->_id));
                 _preSearchTree.gotoChildBySplit(&(*split));
             }
         }

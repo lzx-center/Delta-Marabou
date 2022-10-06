@@ -68,7 +68,7 @@ void SearchTree::processCaseSplit(PiecewiseLinearCaseSplit *split) {
         return;
     }
     auto &node = _nodes[nodeIndex];
-    node._preNode = _mapPositionToNode[PiecewiseLinearConstraint::Position(split->_layer, split->_node)];
+    node._preNode = _current;
     auto &preNode = _nodes[node._preNode];
     auto direction = getDirection(split->getType());
     if (direction == LEFT) {
@@ -171,8 +171,8 @@ void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
     }
     auto direction = getDirection(split->getType());
     gotoChildByDirection(_current, direction);
-    printf("Current node is [%d]\n", _current);
-    _nodes[_current].print();
+    TREE_LOG("Current node is [%d]\n", _current);
+//    _nodes[_current].print();
 }
 
 void SearchTree::setTreeNodeThreshold(unsigned num) {
@@ -181,10 +181,10 @@ void SearchTree::setTreeNodeThreshold(unsigned num) {
 
 void SearchTree::gotoChildByDirection(int current, SearchTree::DirectionType direction) {
     if (direction == RIGHT) {
-        printf("Current id [%d], now go to right node [%d]\n", _current, _nodes[current]._right);
+        TREE_LOG("Current id [%d], now go to right node [%d]\n", _current, _nodes[current]._right);
         _current = _nodes[current]._right;
     } else if (direction == LEFT) {
-        printf("Current id [%d], now go to left node [%d]\n", _current, _nodes[current]._left);
+        TREE_LOG("Current id [%d], now go to left node [%d]\n", _current, _nodes[current]._left);
         _current = _nodes[current]._left;
     } else {
         assert(false && "Unknown direction");
@@ -202,12 +202,12 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
     }
     auto direction = getDirection(list.front().getType());
     if (_nodes[_current]._left == (int)_satisfyPath.back()) {
-        printf("Go to left node [%d] first\n", _satisfyPath.back());
+        TREE_LOG("Go to left node [%d] first\n", _satisfyPath.back());
         if (direction == RIGHT) {
             std::reverse(list.begin(), list.end());
         }
     } else if (_nodes[_current]._right == (int)_satisfyPath.back()) {
-        printf("Go to right node [%d] first\n", _satisfyPath.back());
+        TREE_LOG("Go to right node [%d] first\n", _satisfyPath.back());
         if (direction == LEFT) {
             std::reverse(list.begin(), list.end());
         }
@@ -221,9 +221,14 @@ void SearchTreeNode::print() {
             _id, getStringNodeType().ascii()
     );
     if (_nodeType == PATH_NODE) {
-        printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
-               _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
-        );
+        if (_preNode == -1)
+            printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d\n",
+                   _plLayer, _plNode, getStringPlType().ascii(), _left, _right
+            );
+        else
+            printf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
+                   _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
+            );
     } else {
         printf("Previous node: %d\n", _preNode);
     }

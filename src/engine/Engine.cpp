@@ -339,6 +339,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
     SignalHandler::getInstance()->initialize();
     SignalHandler::getInstance()->registerClient(this);
 
+    std::set<unsigned> restoredNode;
     // Register the boundManager with all the PL constraints
     for (auto &plConstraint: _plConstraints) {
         plConstraint->registerBoundManager(&_boundManager);
@@ -428,10 +429,37 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             if (_smtCore.needToSplit()) {
                 _smtCore.performSplit();
                 splitJustPerformed = true;
-                if (_smtCore._preSearchTree.getCurrentNode().isLeaf()) {
-                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
-                } else if (!_smtCore._preSearchTree._satisfyPath.empty()) {
-                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
+                auto &node = _smtCore._preSearchTree.getCurrentNode();
+                if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
+                    if (!visitedLeaf.exists(node._id)) {
+                        auto list = node.getBasicVariableLists();
+                        bool failed = false;
+                        try {
+                            _tableau->initializeTableau(list);
+                        }
+                        catch ( MalformedBasisException & ) {
+                            failed = true;
+                        }
+                        if (failed) {
+                            try {
+                                list.clear();
+                                auto varSet = getBasicVariable();
+                                for (auto& v : varSet) list.append(v);
+                                _tableau->initializeTableau(list);
+                            } catch ( MalformedBasisException & ) {
+                                try {
+                                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
+                                    performPrecisionRestorationIfNeeded();
+                                } catch ( MalformedBasisException & ) {
+                                    throw MarabouError(
+                                            MarabouError::RESTORATION_FAILED_TO_REFACTORIZE_BASIS,
+                                            "Precision restoration failed - could not refactorize "
+                                            "basis after setting basics" );
+                                }
+                            }
+                        }
+                        visitedLeaf.insert(node._id);
+                    }
                 }
                 continue;
             }
