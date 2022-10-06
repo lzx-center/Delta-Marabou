@@ -243,6 +243,7 @@ public:
     /*
       Logging options
     */
+    static const bool TREE_LOGGING;
     static const bool DNC_MANAGER_LOGGING;
     static const bool ENGINE_LOGGING;
     static const bool TABLEAU_LOGGING;

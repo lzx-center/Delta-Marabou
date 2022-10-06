@@ -4,13 +4,14 @@
 #pragma once
 #ifndef MARABOU_SEARCHTREE_H
 #define MARABOU_SEARCHTREE_H
-
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include "vector"
 #include "PiecewiseLinearConstraint.h"
 #include "string"
+#include "Debug.h"
+#define TREE_LOG(x, ...) LOG(GlobalConfiguration::TREE_LOGGING, "Engine: %s\n", x)
 
 struct SearchTreeNode {
 public:

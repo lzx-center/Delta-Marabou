@@ -290,8 +290,8 @@ bool SmtCore::popSplit() {
         if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
             if (_preSearchTree.getNodeByStackEntry(stackEntry->_id) != -1) {
                 _preSearchTree.setCurrent(_preSearchTree.getNodeByStackEntry(stackEntry->_id));
+                TREE_LOG("Now go back to node %d\n",_preSearchTree.getNodeByStackEntry(stackEntry->_id));
                 _preSearchTree.gotoChildBySplit(&(*split));
-                printf("Now go back to node %d\n",_preSearchTree.getNodeByStackEntry(stackEntry->_id));
             }
         }
         SMT_LOG("\tApplying new split - DONE");

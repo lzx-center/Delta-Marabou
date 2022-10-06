@@ -181,6 +181,7 @@ void Marabou::solveQuery()
 {
     if ( _engine.processInputQuery( _inputQuery ) ) {
         if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+            _engine.renameSearchTreeVariableInIncrementalProcess();
             _engine.incrementalSolve(Options::get()->getInt( Options::TIMEOUT ));
         } else {
             _engine.solve( Options::get()->getInt( Options::TIMEOUT ) );
@@ -194,7 +195,7 @@ void Marabou::solveQuery()
         _engine.extractSolution( _inputQuery );
         _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
     }
-    _engine.getCurrentSearchTree().print();
+    printf("Search Tree size: %d\n", _engine.getCurrentSearchTree().size());
     saveSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
 }
 
@@ -292,7 +293,6 @@ void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
 void Marabou::incrementalRun() {
     loadPreSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
     struct timespec start = TimeUtils::sampleMicro();
-    _engine.renameSearchTreeVariableInIncrementalProcess();
     prepareInputQuery();
     solveQuery();
 
