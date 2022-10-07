@@ -434,7 +434,6 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
                         auto list = node.getBasicVariableLists();
-                        bool failed = false;
                         try {
                             _tableau->initializeTableau(list);
                         }
