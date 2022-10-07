@@ -11,7 +11,7 @@
 #include "PiecewiseLinearConstraint.h"
 #include "string"
 #include "Debug.h"
-#define TREE_LOG(x, ...) LOG(GlobalConfiguration::TREE_LOGGING, "Engine: %s\n", x)
+#define TREE_LOG(f, x, ...) LOG(GlobalConfiguration::TREE_LOGGING, f, x)
 
 struct SearchTreeNode {
 public:
