@@ -214,6 +214,20 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
     }
 }
 
+void SearchTree::printPath() {
+    printf("Tree path:\n");
+    dfsPrint(0);
+}
+
+void SearchTree::dfsPrint(int current) {
+    if (current == -1) return;
+    auto& node = _nodes[current];
+    if (!node.isLeaf())
+        printf("PerformSplit at (%d, %d)\n", node._plLayer, node._plNode);
+    dfsPrint(node._right);
+    dfsPrint(node._left);
+}
+
 
 void SearchTreeNode::print() {
     printf(

@@ -164,6 +164,9 @@ public:
     ResultTYpe getResultType() { return  _resultType; }
 
     void print();
+
+    void printPath();
+    void dfsPrint(int current);
 };
 
 #endif //MARABOU_SEARCHTREE_H
