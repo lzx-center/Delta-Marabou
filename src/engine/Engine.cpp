@@ -358,7 +358,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         _statistics.print();
         printf("\n---\n");
     }
-
+    applyAllValidConstraintCaseSplits();
     _smtCore._preSearchTree.setCurrent(0);
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
     _smtCore.performOneStepInSearchTree();
@@ -431,6 +431,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                 splitJustPerformed = true;
                 auto &node = _smtCore._preSearchTree.getCurrentNode();
                 if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
+                    auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
                         auto list = node.getBasicVariableLists();
                         bool failed = false;
@@ -438,24 +439,15 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                             _tableau->initializeTableau(list);
                         }
                         catch ( MalformedBasisException & ) {
-                            failed = true;
-                        }
-                        if (failed) {
                             try {
+                                printf("try restore origin");
                                 list.clear();
-                                auto varSet = getBasicVariable();
-                                for (auto& v : varSet) list.append(v);
-                                _tableau->initializeTableau(list);
-                            } catch ( MalformedBasisException & ) {
-                                try {
-                                    _basisRestorationRequired = Engine::STRONG_RESTORATION_NEEDED;
-                                    performPrecisionRestorationIfNeeded();
-                                } catch ( MalformedBasisException & ) {
-                                    throw MarabouError(
-                                            MarabouError::RESTORATION_FAILED_TO_REFACTORIZE_BASIS,
-                                            "Precision restoration failed - could not refactorize "
-                                            "basis after setting basics" );
+                                for (auto& v : varSet) {
+                                    list.append(v);
                                 }
+                                _tableau->initializeTableau(list);
+                            } catch (MalformedBasisException &) {
+                                printf("failed!\n");
                             }
                         }
                         visitedLeaf.insert(node._id);
@@ -2044,6 +2036,7 @@ void Engine::explicitBasisBoundTightening() {
 
 void Engine::performPrecisionRestoration(PrecisionRestorer::RestoreBasics restoreBasics) {
     struct timespec start = TimeUtils::sampleMicro();
+    printf("perform Restoration!!!!!!!\n");
 
     // debug
     double before = _degradationChecker.computeDegradation(*_tableau);
