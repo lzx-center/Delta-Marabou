@@ -182,6 +182,8 @@ public:
     void addEliminatedConstraint(PiecewiseLinearConstraint* piecewiseLinearConstraint);
 
     void printAllConstraints();
+
+    void setConstraintViolationThreshold(unsigned threshold) { _constraintViolationThreshold = threshold; };
 private:
     Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToPLConstraints;
     Map<PiecewiseLinearConstraint::Position, PiecewiseLinearConstraint*> _positionToEliminatedPLConstraints;

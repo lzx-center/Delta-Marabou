@@ -195,8 +195,10 @@ void Marabou::solveQuery()
         _engine.extractSolution( _inputQuery );
         _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
     }
-    printf("Search Tree size: %d\n", _engine.getCurrentSearchTree().size());
-    saveSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
+    printf("Search Tree size: %zu\n", _engine.getCurrentSearchTree().size());
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+        saveSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
+    }
 }
 
 void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
@@ -291,14 +293,19 @@ void Marabou::displayResults( unsigned long long microSecondsElapsed ) const
 }
 
 void Marabou::incrementalRun() {
-    loadPreSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
     struct timespec start = TimeUtils::sampleMicro();
+    loadPreSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
+    struct timespec end = TimeUtils::sampleMicro();
+    unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
+    printf("Load search tree use time: %f\n", 1.0 * totalElapsed / 100000);
+
+    start = TimeUtils::sampleMicro();
     prepareInputQuery();
     solveQuery();
 
-    struct timespec end = TimeUtils::sampleMicro();
+    end = TimeUtils::sampleMicro();
 
-    unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
+    totalElapsed = TimeUtils::timePassed( start, end );
     displayResults( totalElapsed );
 
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
