@@ -431,8 +431,10 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                 splitJustPerformed = true;
                 auto &node = _smtCore._preSearchTree.getCurrentNode();
                 if (node.getNodeType() == SearchTreeNode::SAT || node.getNodeType() == SearchTreeNode::UNSAT) {
+                    _smtCore.setConstraintViolationThreshold(Options::get()->getInt(Options::CONSTRAINT_VIOLATION_THRESHOLD));
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
+                        _smtCore.setConstraintViolationThreshold(100);
                         auto list = node.getBasicVariableLists();
                         try {
                             _tableau->initializeTableau(list);
