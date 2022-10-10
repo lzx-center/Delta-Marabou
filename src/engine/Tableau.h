@@ -42,6 +42,7 @@ public:
     Tableau( IBoundManager &boundManager );
     ~Tableau();
 
+    Map<unsigned int, Equation> getEquation();
     /*
       Allocate space for the various data structures
       n: total number of variables
@@ -181,7 +182,7 @@ public:
       are meant to be used during the solution process, when a tighter
       bound has been discovered.
     */
-    void tightenLowerBound( unsigned variable, double value );
+    void tightenLowerBound(unsigned variable, double value, String pos);
     void tightenUpperBound( unsigned variable, double value );
 
     /*

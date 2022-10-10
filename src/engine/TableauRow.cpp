@@ -48,6 +48,20 @@ void TableauRow::dump() const
     printf( "\tlhs = x%u\n", _lhs );
 }
 
+Equation TableauRow::getEquation() {
+    Equation eq;
+    for ( unsigned i = 0; i < _size; ++i )
+    {
+        if ( FloatUtils::isZero( _row[i]._coefficient ) )
+            continue;
+
+        eq.addAddend(_row[i]._coefficient, _row[i]._var );
+    }
+    eq._scalar = _scalar;
+    eq._type = Equation::EQ;
+    return eq;
+}
+
 //
 // Local Variables:
 // compile-command: "make -C ../.. "

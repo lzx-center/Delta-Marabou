@@ -508,7 +508,7 @@ public:
     }
 
     Map<unsigned, double> tightenedLowerBounds;
-    void tightenLowerBound( unsigned variable, double value )
+    void tightenLowerBound(unsigned variable, double value, String pos)
     {
         tightenedLowerBounds[variable] = value;
     }

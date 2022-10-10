@@ -112,6 +112,17 @@ bool Equation::equivalent( const Equation &other ) const
     for ( const auto &addend : other._addends )
         them[addend._variable] = addend._coefficient;
 
+    for (auto& item : us) {
+        unsigned var = item.first;
+        if (them.exists(var)) {
+            if (!FloatUtils::areEqual(us.at(var), them.at(var))) {
+                printf("x%d not equal! Pre is: %f, now is %f\n", var, us.at(var), them.at(var));
+            }
+        } else {
+            printf("Not exists variable x%d\n", var);
+        }
+    }
+
     return us == them;
 }
 

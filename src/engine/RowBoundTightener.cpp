@@ -162,7 +162,6 @@ void RowBoundTightener::examineInvertedBasisMatrix( bool untilSaturation )
 
       We compute one row at a time.
     */
-
     const double *b = _tableau.getRightHandSide();
     const double *invB = _tableau.getInverseBasisMatrix();
 
@@ -301,6 +300,7 @@ unsigned RowBoundTightener::tightenOnSingleInvertedBasisRow( const TableauRow &r
 
     if ( FloatUtils::gt( getLowerBound( y ), getUpperBound( y ) ) )
     {
+        printf("In tightenOnSingleInvertedBasisRow! Left hand variable [%d]\n", y);
         ASSERT( FloatUtils::gt( _boundManager.getLowerBound( y ), _boundManager.getUpperBound( y ) ) );
         throw InfeasibleQueryException();
     }
@@ -378,6 +378,7 @@ unsigned RowBoundTightener::tightenOnSingleInvertedBasisRow( const TableauRow &r
         result += registerTighterUpperBound( xi, upperBound );
         if ( FloatUtils::gt( getLowerBound( xi ), getUpperBound( xi ) ) )
         {
+            printf("In tightenOnSingleInvertedBasisRow! Right hand variable [%d]\n", xi);
             ASSERT( FloatUtils::gt( _boundManager.getLowerBound( xi ), _boundManager.getUpperBound( xi ) ) );
             throw InfeasibleQueryException();
         }
@@ -540,8 +541,10 @@ unsigned RowBoundTightener::tightenOnSingleConstraintRow( unsigned row )
         result += registerTighterLowerBound( index, lowerBound );
         result += registerTighterUpperBound( index, upperBound );
 
-        if ( FloatUtils::gt( getLowerBound( index ), getUpperBound( index ) ) )
+        if ( FloatUtils::gt( getLowerBound( index ), getUpperBound( index ) ) ) {
+            printf("In tightenOnSingleConstraintRow\n");
             throw InfeasibleQueryException();
+        }
     }
 
     return result;

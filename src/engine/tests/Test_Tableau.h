@@ -1294,7 +1294,7 @@ public:
         TS_ASSERT_EQUALS( tableau->getValue( 5 ), 113.0 );
         TS_ASSERT_EQUALS( tableau->getValue( 6 ), 406.0 );
 
-        TS_ASSERT_THROWS_NOTHING( tableau->tightenLowerBound( 1, 4 ) );
+        TS_ASSERT_THROWS_NOTHING(tableau->tightenLowerBound(1, 4, ""));
 
         for ( unsigned i = 0; i < 4; ++i )
         {
@@ -1310,7 +1310,7 @@ public:
         TS_ASSERT_EQUALS( tableau->getUpperBound( 1 ), 10 );
         TS_ASSERT_EQUALS( tableau->getValue( 1 ), 4.0 );
 
-        TS_ASSERT_THROWS_NOTHING( tableau->tightenLowerBound( 1, 2 ) );
+        TS_ASSERT_THROWS_NOTHING(tableau->tightenLowerBound(1, 2, ""));
         TS_ASSERT_THROWS_NOTHING( tableau->tightenUpperBound( 1, 22 ) );
 
         TS_ASSERT_EQUALS( tableau->getLowerBound( 1 ), 4 );
@@ -1325,7 +1325,7 @@ public:
 
         // Tightening the bounds of basic variables doesn't change their values
         TS_ASSERT_EQUALS( tableau->getValue( 5 ), 110.0 );
-        TS_ASSERT_THROWS_NOTHING( tableau->tightenLowerBound( 5, 111 ) );
+        TS_ASSERT_THROWS_NOTHING(tableau->tightenLowerBound(5, 111, ""));
         TS_ASSERT_EQUALS( tableau->getValue( 5 ), 110.0 );
 
         TS_ASSERT_THROWS_NOTHING( delete tableau );

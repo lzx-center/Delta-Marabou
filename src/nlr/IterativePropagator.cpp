@@ -158,6 +158,7 @@ void IterativePropagator::optimizeBoundsWithIterativePropagation( const Map<unsi
                         threads[i].join();
                     }
                     clearSolverQueue( freeSolvers );
+                    printf("In optimizeBoundsWithIterativePropagation\n");
                     throw InfeasibleQueryException();
                 }
 
@@ -207,8 +208,10 @@ void IterativePropagator::optimizeBoundsWithIterativePropagation( const Map<unsi
 
     clearSolverQueue( freeSolvers );
 
-    if ( infeasible )
+    if ( infeasible ) {
+        printf("In optimizeBoundsWithIterativePropagation\n");
         throw InfeasibleQueryException();
+    }
 }
 
 void IterativePropagator::setCutoff( double cutoff )
@@ -240,8 +243,10 @@ double IterativePropagator::optimizeWithGurobi( GurobiWrapper &gurobi, MinOrMax
             *infeasible = true;
             return FloatUtils::infinity();
         }
-        else
+        else {
+            printf("In optimizeWithGurobi\n");
             throw InfeasibleQueryException();
+        }
     }
 
     if ( gurobi.cutoffOccurred() )

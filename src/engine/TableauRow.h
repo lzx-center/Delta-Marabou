@@ -17,6 +17,7 @@
 #define __TableauRow_h__
 
 #include "FloatUtils.h"
+#include "Equation.h"
 
 #include <cstdio>
 
@@ -59,6 +60,8 @@ public:
     unsigned _lhs;
 
     double operator[]( unsigned index ) const;
+
+    Equation getEquation();
 
     void dump() const;
 };

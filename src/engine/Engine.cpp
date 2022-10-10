@@ -231,6 +231,7 @@ bool Engine::solve(unsigned timeoutInSeconds) {
 
             if (!_tableau->allBoundsValid()) {
                 // Some variable bounds are invalid, so the query is unsat
+                printf("In solve 234\n");
                 throw InfeasibleQueryException();
             }
 
@@ -286,6 +287,7 @@ bool Engine::solve(unsigned timeoutInSeconds) {
         }
         catch (const InfeasibleQueryException &) {
             _tableau->toggleOptimization(false);
+            printf("UNSAT\n");
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
@@ -457,6 +459,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
             if (!_tableau->allBoundsValid()) {
                 // Some variable bounds are invalid, so the query is unsat
+                printf("In solve 461\n");
                 throw InfeasibleQueryException();
             }
 
@@ -512,6 +515,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         }
         catch (const InfeasibleQueryException &) {
             _tableau->toggleOptimization(false);
+            printf("UNSAT\n");
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
@@ -844,8 +848,10 @@ bool Engine::performSimplexStep() {
             if (_tableau->isOptimizing()) {
                 // The current solution is optimal.
                 return true;
-            } else
+            } else {
+                printf("In performSimplexStep!\n");
                 throw InfeasibleQueryException();
+            }
         }
     }
 
@@ -1452,6 +1458,7 @@ bool Engine::processInputQuery(InputQuery &inputQuery, bool preprocess) {
 
         if (!_tableau->allBoundsValid()) {
             // Some variable bounds are invalid, so the query is unsat
+            printf("In processInputQuery\n");
             throw InfeasibleQueryException();
         }
     }
@@ -1532,7 +1539,7 @@ void Engine::performMILPSolverBoundedTightening(InputQuery *inputQuery) {
         } else {
             for (const auto &tightening: tightenings) {
                 if (tightening._type == Tightening::LB)
-                    _tableau->tightenLowerBound(tightening._variable, tightening._value);
+                    _tableau->tightenLowerBound(tightening._variable, tightening._value, "performMILPSolverBoundedTightening");
 
                 else if (tightening._type == Tightening::UB)
                     _tableau->tightenUpperBound(tightening._variable, tightening._value);
@@ -1569,7 +1576,7 @@ void Engine::performMILPSolverBoundedTighteningForSingleLayer(unsigned targetInd
 
         for (const auto &tightening: tightenings) {
             if (tightening._type == Tightening::LB)
-                _tableau->tightenLowerBound(tightening._variable, tightening._value);
+                _tableau->tightenLowerBound(tightening._variable, tightening._value, "performMILPSolverBoundedTighteningForSingleLayer");
 
             else if (tightening._type == Tightening::UB)
                 _tableau->tightenUpperBound(tightening._variable, tightening._value);
@@ -1882,7 +1889,7 @@ void Engine::applySplit(const PiecewiseLinearCaseSplit &split) {
 
         if (bound._type == Tightening::LB) {
             ENGINE_LOG(Stringf("x%u: lower bound set to %.3lf", variable, bound._value).ascii());
-            _tableau->tightenLowerBound(variable, bound._value);
+            _tableau->tightenLowerBound(variable, bound._value, "applySplit");
         } else {
             ENGINE_LOG(Stringf("x%u: upper bound set to %.3lf", variable, bound._value).ascii());
             _tableau->tightenUpperBound(variable, bound._value);
@@ -1899,7 +1906,7 @@ void Engine::applyBoundTightenings() {
 
     for (const auto &tightening: tightenings) {
         if (tightening._type == Tightening::LB)
-            _tableau->tightenLowerBound(tightening._variable, tightening._value);
+            _tableau->tightenLowerBound(tightening._variable, tightening._value, "applyBoundTightenings");
         else
             _tableau->tightenUpperBound(tightening._variable, tightening._value);
     }
@@ -2226,7 +2233,7 @@ void Engine::performSymbolicBoundTightening(InputQuery *inputQuery) {
 
             if (tightening._type == Tightening::LB &&
                 FloatUtils::gt(tightening._value, _tableau->getLowerBound(tightening._variable))) {
-                _tableau->tightenLowerBound(tightening._variable, tightening._value);
+                _tableau->tightenLowerBound(tightening._variable, tightening._value, "performSymbolicBoundTightening");
                 ++numTightenedBounds;
             }
 
@@ -2550,6 +2557,7 @@ bool Engine::restoreSmtState(SmtState &smtState) {
     catch (const InfeasibleQueryException &) {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
+        printf("UNSAT\n");
         _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
         if (!_smtCore.popSplit()) {
             if (_verbosity > 0) {
@@ -2882,8 +2890,10 @@ bool Engine::minimizeCostWithGurobi(const LinearExpression &costFunction) {
     _statistics.incLongAttribute(Statistics::NUM_SIMPLEX_STEPS,
                                  _gurobi->getNumberOfSimplexIterations());
 
-    if (_gurobi->infeasible())
+    if (_gurobi->infeasible()) {
+        printf("In minimizeCostWithGurobi\n");
         throw InfeasibleQueryException();
+    }
     else if (_gurobi->optimal())
         return true;
     else

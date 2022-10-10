@@ -1788,8 +1788,9 @@ void Tableau::updateVariableToComplyWithUpperBoundUpdate( unsigned variable, dou
     }
 }
 
-void Tableau::tightenLowerBound( unsigned variable, double value )
+void Tableau::tightenLowerBound(unsigned variable, double value, String pos)
 {
+    printf("Call tighten Lower Bound to variable [%d], in function [%s]\n", variable, pos.ascii());
     ASSERT( variable < _n );
 
     if ( !FloatUtils::gt( value, getLowerBound( variable ) ) )
@@ -2525,10 +2526,11 @@ void Tableau::mergeColumns( unsigned x1, unsigned x2 )
       If x2 has tighter bounds than x1, adjust the bounds
       for x1.
     */
+    printf("In mergeColumns\n");
     if ( FloatUtils::lt( getUpperBound( x2 ), getUpperBound( x1 ) ) )
         tightenUpperBound( x1, getUpperBound( x2 ) );
     if ( FloatUtils::gt( getLowerBound( x2 ), getLowerBound( x1 ) ) )
-        tightenLowerBound( x1, getLowerBound( x2 ) );
+        tightenLowerBound(x1, getLowerBound(x2), "");
 
     /*
       Merge column x2 of the constraint matrix into x1
@@ -2610,4 +2612,16 @@ void Tableau::setBoundsPointers( const double *lower, const double *upper )
 {
     _lowerBounds = lower;
     _upperBounds = upper;
+}
+
+Map<unsigned int, Equation> Tableau::getEquation() {
+    TableauRow row( _n - _m );
+    Map<unsigned, Equation> ret;
+    for ( unsigned i = 0; i < _m; ++i )
+    {
+        getTableauRow( i, &row );
+        auto eq = row.getEquation();
+        ret[ _basicIndexToVariable[i]] = eq;
+    }
+    return ret;
 }

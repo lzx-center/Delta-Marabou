@@ -21,6 +21,9 @@
 #include "List.h"
 #include "Set.h"
 #include "TableauStateStorageLevel.h"
+#include "Vector.h"
+#include "MString.h"
+#include "Map.h"
 
 class EntrySelectionStrategy;
 class Equation;
@@ -105,7 +108,7 @@ public:
     virtual void setLowerBound( unsigned variable, double value ) = 0;
     virtual void setUpperBound( unsigned variable, double value ) = 0;
     virtual void setBoundsPointers( const double *lower, const double *upper ) = 0;
-    virtual void tightenLowerBound( unsigned variable, double value ) = 0;
+    virtual void tightenLowerBound(unsigned variable, double value, String pos) = 0;
     virtual void tightenUpperBound( unsigned variable, double value ) = 0;
     virtual void notifyLowerBound( unsigned variable, double bound ) = 0;
     virtual void notifyUpperBound( unsigned variable, double bound ) = 0;
@@ -185,6 +188,7 @@ public:
     virtual unsigned getVariableAfterMerging( unsigned variable ) const = 0;
     virtual void postContextPopHook() = 0;
     virtual IBoundManager &getBoundManager() const = 0;
+    virtual Map<unsigned int, Equation> getEquation() = 0;
 
     bool isOptimizing() const
     {

@@ -69,8 +69,10 @@ double LPFormulator::optimizeWithGurobi( GurobiWrapper &gurobi,
             *infeasible = true;
             return FloatUtils::infinity();
         }
-        else
+        else {
+            printf("In optimizeWithGurobi\n");
             throw InfeasibleQueryException();
+        }
     }
 
     if ( gurobi.cutoffOccurred() )
@@ -145,8 +147,10 @@ void LPFormulator::optimizeBoundsWithIncrementalLpRelaxation( const Map<unsigned
             gurobi.setObjective( terms );
             gurobi.solve();
 
-            if ( gurobi.infeasible() )
+            if ( gurobi.infeasible() ) {
+                printf("In optimizeBoundsWithIncrementalLpRelaxation\n");
                 throw InfeasibleQueryException();
+            }
 
             if ( gurobi.cutoffOccurred() )
             {
@@ -192,8 +196,10 @@ void LPFormulator::optimizeBoundsWithIncrementalLpRelaxation( const Map<unsigned
             gurobi.setCost( terms );
             gurobi.solve();
 
-            if ( gurobi.infeasible() )
+            if ( gurobi.infeasible() ) {
+                printf("In optimizeBoundsWithIncrementalLpRelaxation\n");
                 throw InfeasibleQueryException();
+            }
 
             if ( gurobi.cutoffOccurred() )
             {
@@ -306,8 +312,10 @@ void LPFormulator::optimizeBoundsWithLpRelaxation( const Map<unsigned, Layer *> 
 
     clearSolverQueue( freeSolvers );
 
-    if ( infeasible )
+    if ( infeasible ) {
+        printf("In optimizeBoundsWithLpRelaxation\n");
         throw InfeasibleQueryException();
+    }
 }
 
 void LPFormulator::optimizeBoundsOfOneLayerWithLpRelaxation( const Map<unsigned, Layer *> &layers, unsigned targetIndex )
@@ -370,8 +378,10 @@ void LPFormulator::optimizeBoundsOfOneLayerWithLpRelaxation( const Map<unsigned,
 
     clearSolverQueue( freeSolvers );
 
-    if ( infeasible )
+    if ( infeasible ) {
+        printf("In optimizeBoundsOfOneLayerWithLpRelaxation\n");
         throw InfeasibleQueryException();
+    }
 }
 
 void LPFormulator::optimizeBoundsOfNeuronsWithLpRlaxation( ThreadArgument &args )
@@ -458,6 +468,7 @@ void LPFormulator::optimizeBoundsOfNeuronsWithLpRlaxation( ThreadArgument &args 
                 threads[i].join();
             }
             clearSolverQueue( freeSolvers );
+            printf("In optimizeBoundsOfNeuronsWithLpRlaxation\n");
             throw InfeasibleQueryException();
         }
 

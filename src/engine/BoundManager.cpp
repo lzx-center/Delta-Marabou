@@ -155,8 +155,11 @@ void BoundManager::recordInconsistentBound( unsigned variable, double value, Tig
 {
   if ( _consistentBounds )
   {
+      printf("Variable [%d] inconsistent\n", variable);
     _consistentBounds = false;
     _firstInconsistentTightening = Tightening( variable, value, type );
+  } else {
+      printf("Variable [%d] inconsistent but not first\n", variable);
   }
 }
 
@@ -173,7 +176,6 @@ bool BoundManager::setLowerBound( unsigned variable, double value )
     }
     return false;
 }
-
 
 bool BoundManager::setUpperBound( unsigned variable, double value )
 {
@@ -258,6 +260,7 @@ void BoundManager::clearTightenings()
 
 void BoundManager::propagateTightenings()
 {
+    printf("In propagateTightening\n");
     for ( unsigned i = 0; i < _size; ++i )
     {
       if ( *_tightenedLower[i] )
