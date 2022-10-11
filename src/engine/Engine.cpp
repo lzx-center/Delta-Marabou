@@ -434,21 +434,23 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     _smtCore.setConstraintViolationThreshold(Options::get()->getInt(Options::CONSTRAINT_VIOLATION_THRESHOLD));
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
-                        _smtCore.setConstraintViolationThreshold(100);
+                        _smtCore.setConstraintViolationThreshold(30);
                         auto list = node.getBasicVariableLists();
-                        try {
-                            _tableau->initializeTableau(list);
-                        }
-                        catch ( MalformedBasisException & ) {
+                        if (node._basicVariables.size() == list.size()) {
                             try {
-                                printf("try restore origin");
-                                list.clear();
-                                for (auto& v : varSet) {
-                                    list.append(v);
-                                }
                                 _tableau->initializeTableau(list);
-                            } catch (MalformedBasisException &) {
-                                printf("failed!\n");
+                            }
+                            catch ( MalformedBasisException & ) {
+                                try {
+                                    printf("try restore origin");
+                                    list.clear();
+                                    for (auto& v : varSet) {
+                                        list.append(v);
+                                    }
+                                    _tableau->initializeTableau(list);
+                                } catch (MalformedBasisException &) {
+                                    printf("failed!\n");
+                                }
                             }
                         }
                         visitedLeaf.insert(node._id);

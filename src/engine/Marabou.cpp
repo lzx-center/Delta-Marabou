@@ -196,7 +196,7 @@ void Marabou::solveQuery()
         _engine.getCurrentSearchTree().setVerifiedResult(SearchTree::VERIFIED_SAT);
     }
     printf("Search Tree size: %zu\n", _engine.getCurrentSearchTree().size());
-    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+    if (!Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         saveSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
     }
 }
