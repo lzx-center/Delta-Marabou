@@ -28,7 +28,11 @@ SearchTreeNode &SearchTree::getNode(int index) {
     return _nodes[index];
 }
 
-void SearchTree::saveToFile(const String &filePath) const {
+void SearchTree::saveToFile(const String &filePath)  {
+    for (auto& node : _nodes) {
+        node.calcTime();
+        node.printProcessTime();
+    }
     std::ofstream ofs(filePath.ascii());
     {
         boost::archive::text_oarchive oa(ofs);
@@ -353,6 +357,11 @@ List<unsigned> SearchTreeNode::getBasicVariableLists() {
 
 void SearchTreeNode::printProcessTime() {
     printf("Time to perform next split %f, Time to back to current node: %f\n",
-           1.0 * TimeUtils::timePassed(_start, _end) / 1000000, 1.0 * TimeUtils::timePassed(_start, _back) / 1000000);
+           _timeToSplit, _timeToBack);
     printf("\n");
+}
+
+void SearchTreeNode::calcTime() {
+    _timeToSplit = 1.0 * TimeUtils::timePassed(_start, _end) / 1000000;
+    _timeToBack = 1.0 * TimeUtils::timePassed(_start, _back) / 1000000;
 }

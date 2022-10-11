@@ -28,7 +28,8 @@ public:
     explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
                                           _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN),
                                           _start(TimeUtils::sampleMicro()), _end(TimeUtils::sampleMicro()),
-                                          _back(TimeUtils::sampleMicro()), _preUnSAT(-1) {}
+                                          _back(TimeUtils::sampleMicro()), _preUnSAT(-1), _timeToBack(0.0), _timeToSplit(0.0)
+                                          {}
 
     int _id;
     NodeType _nodeType;
@@ -43,6 +44,7 @@ public:
     PiecewiseLinearFunctionType _plType;
     struct timespec _start, _end, _back;
     int _preUnSAT;
+    double _timeToSplit, _timeToBack;
 
     PiecewiseLinearConstraint::Position getPosition();
 
@@ -66,6 +68,7 @@ public:
 
     void print();
     void printProcessTime();
+    void calcTime();
 private:
     friend class boost::serialization::access;
 
@@ -77,6 +80,7 @@ private:
         if (version >= 0) {
             ar & _plLayer & _plNode & _conflictVariable;
             ar & _left & _right & _preNode & _id & _nodeType & _basicVariables & _plType;
+            ar & _timeToBack & _timeToSplit;
         }
     }
 };
@@ -147,7 +151,7 @@ public:
         _current = index;
     }
 
-    void saveToFile(const String &filePath) const;
+    void saveToFile(const String &filePath);
 
     void loadFromFile(const String &filePath);
 
