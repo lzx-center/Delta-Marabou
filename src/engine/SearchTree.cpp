@@ -86,6 +86,7 @@ void SearchTree::setNodeInfo(PiecewiseLinearConstraint *pLConstraint) {
     if (_current == -1) return;
     auto &node = _nodes[_current];
     node.setPosition(pLConstraint->_position);
+    node._end = TimeUtils::sampleMicro();
     node.setType(pLConstraint->getType());
     _mapPositionToNode[pLConstraint->getPosition()] = _current;
 }
@@ -99,8 +100,10 @@ void SearchTree::markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict) {
         return;
     }
     auto &node = _nodes[_current];
+    node._end = TimeUtils::sampleMicro();
+    node._back = node._end;
     assert(node._plType == UNKNOWN);
-    _resultType = VERIFIED_SAT;
+    _resultType = VERIFIED_UNSAT;
     node._nodeType = SearchTreeNode::UNSAT;
     node._basicVariables.reserve(varSet.size());
     for (auto var: varSet) {
@@ -115,10 +118,13 @@ size_t SearchTree::size() {
 
 void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
     auto &node = _nodes[_current];
+    node._end = TimeUtils::sampleMicro();
+    node._back = node._end;
     node._nodeType = SearchTreeNode::SAT;
     for (auto var: varSet) {
         node._basicVariables.push_back(var);
     }
+    _resultType = VERIFIED_SAT;
     std::vector<unsigned> stack;
     int current = node._id;
     while (current != -1) {
@@ -164,8 +170,7 @@ SearchTree::getDirection(PiecewiseLinearCaseSplit::SplitType type) {
 }
 
 
-
-void SearchTree::gotoChildBySplit( PiecewiseLinearCaseSplit *split) {
+void SearchTree::gotoChildBySplit(PiecewiseLinearCaseSplit *split) {
     if (_nodes[_current].isLeaf()) {
         return;
     }
@@ -201,15 +206,31 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
         return;
     }
     auto direction = getDirection(list.front().getType());
-    if (_nodes[_current]._left == (int)_satisfyPath.back()) {
+    if (_nodes[_current]._left == (int) _satisfyPath.back()) {
         TREE_LOG("Go to left node [%d] first\n", _satisfyPath.back());
         if (direction == RIGHT) {
             std::reverse(list.begin(), list.end());
         }
-    } else if (_nodes[_current]._right == (int)_satisfyPath.back()) {
+    } else if (_nodes[_current]._right == (int) _satisfyPath.back()) {
         TREE_LOG("Go to right node [%d] first\n", _satisfyPath.back());
         if (direction == LEFT) {
             std::reverse(list.begin(), list.end());
+        }
+    }
+}
+
+void SearchTree::printPreUnSat() {
+    for(auto& node : _nodes) {
+        if (node._preUnSAT != -1) {
+            node.print();
+        }
+    }
+}
+
+void SearchTree::printUnSAT() {
+    for(auto& node : _nodes) {
+        if (node._nodeType == SearchTreeNode::UNSAT) {
+            node.print();
         }
     }
 }
@@ -242,7 +263,10 @@ void SearchTreeNode::print() {
         }
         printf("\n");
     }
-    printf("\n");
+    if (_preUnSAT != -1) {
+        printf("Pre unsat node: %d\n", _preUnSAT );
+    }
+    printProcessTime();
 }
 
 PiecewiseLinearConstraint::Position SearchTreeNode::getPosition() {
@@ -321,8 +345,14 @@ SearchTreeNode::NodeType SearchTreeNode::getNodeType() {
 
 List<unsigned> SearchTreeNode::getBasicVariableLists() {
     List<unsigned> ret;
-    for (auto &v : _basicVariables) {
+    for (auto &v: _basicVariables) {
         ret.append(v);
     }
     return ret;
+}
+
+void SearchTreeNode::printProcessTime() {
+    printf("Time to perform next split %f, Time to back to current node: %f\n",
+           1.0 * TimeUtils::timePassed(_start, _end) / 1000000, 1.0 * TimeUtils::timePassed(_start, _back) / 1000000);
+    printf("\n");
 }

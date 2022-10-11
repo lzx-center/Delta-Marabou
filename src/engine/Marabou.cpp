@@ -56,8 +56,10 @@ void Marabou::run()
     unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
     displayResults( totalElapsed );
 
+
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
+    _engine.getCurrentSearchTree().printUnSAT();
 }
 
 void Marabou::prepareInputQuery()
@@ -310,6 +312,8 @@ void Marabou::incrementalRun() {
 
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
+    auto& current = _engine.getCurrentSearchTree();
+    current.printPreUnSat();
 }
 
 void Marabou::loadPreSearchTree(String path) {

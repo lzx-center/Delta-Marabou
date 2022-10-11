@@ -247,6 +247,11 @@ bool SmtCore::popSplit() {
                 printf("Error! Popping from a compliant stack\n");
                 throw MarabouError(MarabouError::DEBUGGING_ERROR);
             }
+            auto index = _searchTree.getNodeByStackEntry(_stack.back()->_id);
+            if (index != -1) {
+                auto& node = _searchTree.getNode(index);
+                node._back = TimeUtils::sampleMicro();
+            }
             delete _stack.back()->_engineState;
             delete _stack.back();
             _stack.popBack();
@@ -286,6 +291,7 @@ bool SmtCore::popSplit() {
         _engine->applySplit(*split);
 
         _searchTree.setCurrent(_searchTree.getNodeByStackEntry(stackEntry->_id));
+        _searchTree.getCurrentNode()._back = TimeUtils::sampleMicro();
         _searchTree.processCaseSplit(&(*split));
         if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
             if (_preSearchTree.getNodeByStackEntry(stackEntry->_id) != -1) {

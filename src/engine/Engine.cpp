@@ -434,6 +434,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     _smtCore.setConstraintViolationThreshold(Options::get()->getInt(Options::CONSTRAINT_VIOLATION_THRESHOLD));
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
+                        _smtCore._searchTree.getCurrentNode()._preUnSAT = node._id;
                         _smtCore.setConstraintViolationThreshold(30);
                         auto list = node.getBasicVariableLists();
                         if (node._basicVariables.size() == list.size()) {

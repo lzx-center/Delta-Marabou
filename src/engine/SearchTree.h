@@ -4,6 +4,7 @@
 #pragma once
 #ifndef MARABOU_SEARCHTREE_H
 #define MARABOU_SEARCHTREE_H
+
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
@@ -11,6 +12,8 @@
 #include "PiecewiseLinearConstraint.h"
 #include "string"
 #include "Debug.h"
+#include "TimeUtils.h"
+
 #define TREE_LOG(f, x, ...) LOG(GlobalConfiguration::TREE_LOGGING, f, x)
 
 struct SearchTreeNode {
@@ -23,7 +26,9 @@ public:
     };
 
     explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
-                                          _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN) {}
+                                          _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN),
+                                          _start(TimeUtils::sampleMicro()), _end(TimeUtils::sampleMicro()),
+                                          _back(TimeUtils::sampleMicro()), _preUnSAT(-1) {}
 
     int _id;
     NodeType _nodeType;
@@ -36,6 +41,8 @@ public:
     int _preNode, _plLayer, _plNode;
     std::vector<unsigned> _basicVariables;
     PiecewiseLinearFunctionType _plType;
+    struct timespec _start, _end, _back;
+    int _preUnSAT;
 
     PiecewiseLinearConstraint::Position getPosition();
 
@@ -58,7 +65,7 @@ public:
     static String getTypeString(PiecewiseLinearFunctionType type);
 
     void print();
-
+    void printProcessTime();
 private:
     friend class boost::serialization::access;
 
@@ -124,7 +131,7 @@ public:
 
     size_t size();
 
-    void adjustDirection(List<PiecewiseLinearCaseSplit>& list);
+    void adjustDirection(List<PiecewiseLinearCaseSplit> &list);
 
     void markUnsatLeaf(const Set<unsigned> &varSet, unsigned conflict);
 
@@ -148,9 +155,10 @@ public:
 
     void processCaseSplit(PiecewiseLinearCaseSplit *split);
 
-    void gotoChildBySplit( PiecewiseLinearCaseSplit *split);
+    void gotoChildBySplit(PiecewiseLinearCaseSplit *split);
 
     void gotoChildByDirection(int current, DirectionType direction);
+
     /*
      * 0 : for left
      * 1 : for right
@@ -161,9 +169,12 @@ public:
 
     String getStringResultType();
 
-    ResultTYpe getResultType() { return  _resultType; }
+    ResultTYpe getResultType() { return _resultType; }
 
     void print();
+    void printPreUnSat();
+    void printUnSAT();
+
 };
 
 #endif //MARABOU_SEARCHTREE_H
