@@ -352,6 +352,10 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
 
     updateDirections();
     storeInitialEngineState();
+    ENGINE_LOG("Encoding convex relaxation into Gurobi...");
+    _milpEncoder->encodeInputQuery(*_gurobi, *_preprocessedQuery, true);
+    ENGINE_LOG("Encoding convex relaxation into Gurobi - done");
+
     mainLoopStatistics();
     if (_verbosity > 0) {
         printf("\nEngine::solve: Initial statistics\n");
@@ -421,7 +425,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             // If true, we just entered a new subproblem
             if (splitJustPerformed) {
                 performBoundTighteningAfterCaseSplit();
-                informLPSolverOfBounds();
+//                informLPSolverOfBounds();
                 splitJustPerformed = false;
             }
 
@@ -435,11 +439,20 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
                         _smtCore._searchTree.getCurrentNode()._preUnSAT = node._id;
-                        _smtCore.setConstraintViolationThreshold(30);
+
+                        performBoundTighteningAfterCaseSplit();
+                        informLPSolverOfBounds();
+                        splitJustPerformed = false;
+
                         auto list = node.getBasicVariableLists();
                         if (node._basicVariables.size() == list.size()) {
                             try {
                                 _tableau->initializeTableau(list);
+                                auto conflict = node._conflictVariable;
+                                if (FloatUtils::gt(_tableau->getLowerBound(conflict), _tableau->getUpperBound(conflict))) {
+                                    printf("Found Conflict variable: %d\n", conflict);
+                                    throw InfeasibleQueryException();
+                                }
                             }
                             catch ( MalformedBasisException & ) {
                                 try {
@@ -1406,6 +1419,14 @@ bool Engine::processInputQuery(InputQuery &inputQuery, bool preprocess) {
             initializeTableau(constraintMatrix, initialBasis);
 
             delete[] constraintMatrix;
+            if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
+                _gurobi = std::unique_ptr<GurobiWrapper>(new GurobiWrapper());
+                _milpEncoder = std::unique_ptr<MILPEncoder>
+                        (new MILPEncoder(*_tableau));
+                _milpEncoder->setStatistics(&_statistics);
+                _tableau->setGurobi(&(*_gurobi));
+                initializeBoundsAndConstraintWatchersInTableau(n);
+            }
         } else {
             ASSERT(_lpSolverType == LPSolverType::GUROBI);
 
@@ -2853,7 +2874,7 @@ void Engine::bumpUpPseudoImpactOfPLConstraintsNotInSoI() {
 }
 
 void Engine::informLPSolverOfBounds() {
-    if (_lpSolverType == LPSolverType::GUROBI) {
+    if (Options::get()->getBool(Options::INCREMENTAL_VERIFICATION)) {
         struct timespec start = TimeUtils::sampleMicro();
         for (unsigned i = 0; i < _preprocessedQuery->getNumberOfVariables(); ++i) {
             String variableName = _milpEncoder->getVariableNameFromVariable(i);

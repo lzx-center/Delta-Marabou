@@ -313,19 +313,19 @@ void Marabou::incrementalRun() {
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
 
-    auto& current = _engine.getCurrentSearchTree();
-    auto& pre = _engine.getPreSearchTree();
-    for (size_t i = 0; i < current.size(); ++ i) {
-        auto& node = current.getNode(i);
-        if (node._preUnSAT!= -1) {
-            printf("Current node [%d]:\n", node._id);
-            node.calcTime();
-            node.printProcessTime();
-            auto& preNode = pre.getNode(node._preUnSAT);
-            printf("Pre:\n");
-            preNode.printProcessTime();
-        }
-    }
+//    auto& current = _engine.getCurrentSearchTree();
+//    auto& pre = _engine.getPreSearchTree();
+//    for (size_t i = 0; i < current.size(); ++ i) {
+//        auto& node = current.getNode(i);
+//        if (node._preUnSAT!= -1) {
+//            printf("Current node [%d]:\n", node._id);
+//            node.calcTime();
+//            node.printProcessTime();
+//            auto& preNode = pre.getNode(node._preUnSAT);
+//            printf("Pre:\n");
+//            preNode.printProcessTime();
+//        }
+//    }
 }
 
 void Marabou::loadPreSearchTree(String path) {

@@ -186,8 +186,9 @@ public:
     */
     bool gurobiEnabled() const
     {
+        return false;
 #ifdef ENABLE_GUROBI
-        return true;
+//        return true;
 #else
         return false;
 #endif
