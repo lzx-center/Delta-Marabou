@@ -106,6 +106,7 @@ private:
     ResultTYpe _resultType;
     unsigned _nodeNumThreshold;
 
+
     friend class boost::serialization::access;
 
     template<class Archive>
@@ -117,6 +118,8 @@ private:
     }
 
 public:
+    int _numCannotJudgeUnSat = 0;
+    int _totalUnSatInPreTree = 0;
     SearchTree();
 
     void setTreeNodeThreshold(unsigned num);

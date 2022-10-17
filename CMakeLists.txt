@@ -15,7 +15,7 @@ option(ENABLE_GUROBI "Enable use the Gurobi optimizer" ON )
 option(ENABLE_OPENBLAS "Do symbolic bound tighting using blas" ON) # Not available on windows
 option(CODE_COVERAGE "add code coverage" OFF)  # Available only in debug mode
 set(GUROBI_DIR "/opt/gurobi951/linux64")
-
+message(${ENABLE_GUROBI})
 set(DEFAULT_PYTHON_VERSION "3" CACHE STRING "Default Python version 2/3")
 set(PYTHON_VERSIONS_SUPPORTED 2 3)
 list(FIND PYTHON_VERSIONS_SUPPORTED ${DEFAULT_PYTHON_VERSION} index)

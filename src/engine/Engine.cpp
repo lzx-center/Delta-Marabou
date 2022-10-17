@@ -439,6 +439,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     auto varSet = getBasicVariable();
                     if (!visitedLeaf.exists(node._id)) {
                         _smtCore._searchTree.getCurrentNode()._preUnSAT = node._id;
+                        _smtCore._searchTree._totalUnSatInPreTree += 1;
 
                         performBoundTighteningAfterCaseSplit();
                         informLPSolverOfBounds();
@@ -450,9 +451,46 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                                 _tableau->initializeTableau(list);
                                 auto conflict = node._conflictVariable;
                                 if (FloatUtils::gt(_tableau->getLowerBound(conflict), _tableau->getUpperBound(conflict))) {
-                                    printf("Found Conflict variable: %d\n", conflict);
+                                    throw InfeasibleQueryException();
+                                } else {
+//                                    printf("try other variable\n");
+                                    auto input_list = _preprocessedQuery->getInputVariables();
+                                    for (auto i = input_list.begin(); i != input_list.end(); ++ i) {
+                                        LinearExpression cost;
+                                        cost._addends[*i] = 1;
+                                        minimizeCostWithGurobi(cost);
+                                        double lowerbound = _gurobi->getOptimalCostOrObjective();
+
+                                        cost._addends[*i] = -1;
+                                        minimizeCostWithGurobi(cost);
+                                        double upperbound = -_gurobi->getOptimalCostOrObjective();
+                                        if (FloatUtils::areEqual(lowerbound, _tableau->getLowerBound(*i)) and FloatUtils::areEqual(upperbound, _tableau->getUpperBound(*i))) {
+                                            continue;
+                                        }
+//                                        printf("Input variable:%d [%f, %f] -> : [%f, %f]\n", *i, _tableau->getLowerBound(*i), _tableau->getUpperBound(*i),  lowerbound, upperbound);
+                                        _networkLevelReasoner->receiveTighterBound(Tightening(*i, lowerbound, Tightening::LB));
+                                        _networkLevelReasoner->receiveTighterBound(Tightening(*i, upperbound, Tightening::UB));
+                                        _tableau->tightenLowerBound(*i, lowerbound);
+                                        _tableau->tightenUpperBound(*i, upperbound);
+                                    }
+                                    performBoundTighteningAfterCaseSplit();
+                                    informLPSolverOfBounds();
+                                }
+
+                                LinearExpression cost;
+                                cost._addends[conflict] = 1;
+                                minimizeCostWithGurobi(cost);
+                                double lowerbound = _gurobi->getOptimalCostOrObjective();
+
+                                cost._addends[conflict] = -1;
+                                minimizeCostWithGurobi(cost);
+                                double upperbound = _gurobi->getOptimalCostOrObjective();
+//                                printf("Variable:%d [%f, %f] -> : [%f, %f]\n", conflict, _tableau->getLowerBound(conflict), _tableau->getUpperBound(conflict),  lowerbound, upperbound);
+                                if (FloatUtils::gt(lowerbound, upperbound)) {
                                     throw InfeasibleQueryException();
                                 }
+                                _smtCore._searchTree._numCannotJudgeUnSat += 1;
+//                                printf("Can not judge unsat!\n\n");
                             }
                             catch ( MalformedBasisException & ) {
                                 try {
@@ -2881,7 +2919,6 @@ void Engine::informLPSolverOfBounds() {
             _gurobi->setLowerBound(variableName, _tableau->getLowerBound(i));
             _gurobi->setUpperBound(variableName, _tableau->getUpperBound(i));
         }
-        _gurobi->updateModel();
         struct timespec end = TimeUtils::sampleMicro();
         _statistics.incLongAttribute
                 (Statistics::TIME_ADDING_CONSTRAINTS_TO_MILP_SOLVER_MICRO,
@@ -2907,7 +2944,6 @@ bool Engine::minimizeCostWithGurobi(const LinearExpression &costFunction) {
                                  TimeUtils::timePassed(simplexStart, simplexEnd));
     _statistics.incLongAttribute(Statistics::NUM_SIMPLEX_STEPS,
                                  _gurobi->getNumberOfSimplexIterations());
-
     if (_gurobi->infeasible())
         throw InfeasibleQueryException();
     else if (_gurobi->optimal())
