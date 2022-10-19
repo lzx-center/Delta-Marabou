@@ -67,8 +67,10 @@ public:
     static String getTypeString(PiecewiseLinearFunctionType type);
 
     void print();
+    Stringf getStringSummary();
     void printProcessTime();
     void calcTime();
+
 private:
     friend class boost::serialization::access;
 
@@ -181,7 +183,8 @@ public:
     void print();
     void printPreUnSat();
     void printUnSAT();
-
+    void printSummaryToFile(Stringf filePath="");
+    void getSubTree(int current, std::vector<unsigned int> &numSubNode);
 };
 
 #endif //MARABOU_SEARCHTREE_H

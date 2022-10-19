@@ -28,10 +28,10 @@ SearchTreeNode &SearchTree::getNode(int index) {
     return _nodes[index];
 }
 
-void SearchTree::saveToFile(const String &filePath)  {
-    for (auto& node : _nodes) {
+void SearchTree::saveToFile(const String &filePath) {
+    for (auto &node: _nodes) {
         node.calcTime();
-        node.printProcessTime();
+//        node.printProcessTime();
     }
     std::ofstream ofs(filePath.ascii());
     {
@@ -224,7 +224,7 @@ void SearchTree::adjustDirection(List<PiecewiseLinearCaseSplit> &list) {
 }
 
 void SearchTree::printPreUnSat() {
-    for(auto& node : _nodes) {
+    for (auto &node: _nodes) {
         if (node._preUnSAT != -1) {
             node.print();
         }
@@ -232,10 +232,51 @@ void SearchTree::printPreUnSat() {
 }
 
 void SearchTree::printUnSAT() {
-    for(auto& node : _nodes) {
+    for (auto &node: _nodes) {
         if (node._nodeType == SearchTreeNode::UNSAT) {
             node.print();
         }
+    }
+}
+
+void SearchTree::printSummaryToFile(Stringf filePath) {
+    std::ofstream outfile;
+    outfile.open(filePath.ascii());
+    std::vector<unsigned> numSubNodes(_nodes.size(), 0);
+    getSubTree(0, numSubNodes);
+    outfile << "Tree info:\n";
+    outfile << Stringf("\tSearch tree size: %d\n",
+                       _nodes.size()).ascii();
+    if (_resultType == VERIFIED_UNSAT) {
+        outfile << Stringf("Total unsat: %d, can not judge: %d, success rate: %f\n", _totalUnSatInPreTree,
+                           _numCannotJudgeUnSat, 1.0 - 1.0 * _numCannotJudgeUnSat / _totalUnSatInPreTree).ascii();
+    }
+    for (auto &node: _nodes) {
+        outfile << node.getStringSummary().ascii();
+        outfile << "SubTree size: " << numSubNodes[node._id] << "\n";
+        outfile << "\n";
+    }
+
+    outfile << "\nCompare tree info:\n";
+    for (auto &node : _nodes) {
+        if (node._preUnSAT != -1) {
+            outfile << Stringf("Current node is : %d, pre search tree node: %d\n", node._id, node._preUnSAT).ascii();
+            outfile << "SubTree size: " << numSubNodes[node._id] << "\n";
+        }
+    }
+    outfile.close();
+}
+
+void SearchTree::getSubTree(int current, std::vector<unsigned int> &numSubNode) {
+    numSubNode[current] = 1;
+    auto left = _nodes[current]._left, right = _nodes[current]._right;
+    if (left != -1) {
+        getSubTree(left, numSubNode);
+        numSubNode[current] += numSubNode[left];
+    }
+    if (right != -1) {
+        getSubTree(right, numSubNode);
+        numSubNode[current] += numSubNode[right];
     }
 }
 
@@ -268,7 +309,7 @@ void SearchTreeNode::print() {
         printf("\n");
     }
     if (_preUnSAT != -1) {
-        printf("Pre unsat node: %d\n", _preUnSAT );
+        printf("Pre unsat node: %d\n", _preUnSAT);
     }
     printProcessTime();
 }
@@ -364,4 +405,34 @@ void SearchTreeNode::printProcessTime() {
 void SearchTreeNode::calcTime() {
     _timeToSplit = 1.0 * TimeUtils::timePassed(_start, _end) / 1000000;
     _timeToBack = 1.0 * TimeUtils::timePassed(_start, _back) / 1000000;
+}
+
+Stringf SearchTreeNode::getStringSummary() {
+    Stringf ret("");
+    ret += Stringf(
+            "Tree node id: %d, node type: %s\n",
+            _id, getStringNodeType().ascii()
+    );
+    if (_nodeType == PATH_NODE) {
+        if (_preNode == -1)
+            ret += Stringf("Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d\n",
+                           _plLayer, _plNode, getStringPlType().ascii(), _left, _right
+            );
+        else
+            ret += Stringf(
+                    "Constraint position is (%d, %d), PLConstraint type: %s\nleft node: %d, right node: %d, pre-node: %d\n",
+                    _plLayer, _plNode, getStringPlType().ascii(), _left, _right, _preNode
+            );
+    } else {
+        ret += Stringf("Previous node: %d\n", _preNode);
+    }
+    if (_nodeType == UNSAT) {
+        ret += Stringf("Conflict variable: %d\n", _conflictVariable);
+    }
+    if (_preUnSAT != -1) {
+        ret += Stringf("Pre unsat node: %d\n", _preUnSAT);
+    }
+    ret += Stringf("Time to perform next split %f, Time to back to current node: %f\n",
+                   _timeToSplit, _timeToBack);
+    return ret;
 }

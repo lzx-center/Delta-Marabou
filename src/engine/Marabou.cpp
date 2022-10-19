@@ -56,10 +56,10 @@ void Marabou::run()
     unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
     displayResults( totalElapsed );
 
-    _engine.getCurrentSearchTree().print();
-
+//    _engine.getCurrentSearchTree().print();
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
+    _engine.getCurrentSearchTree().printSummaryToFile("/home/center/Delta-Marabou/resources/nnet/acasxu/summary.txt");
 }
 
 void Marabou::prepareInputQuery()
@@ -312,8 +312,7 @@ void Marabou::incrementalRun() {
 
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
-    auto& current = _engine.getCurrentSearchTree();
-    printf("Total unsat: %d, can not judge: %d, success rate: %f\n", current._totalUnSatInPreTree, current._numCannotJudgeUnSat, 1.0 - 1.0 * current._numCannotJudgeUnSat /current._totalUnSatInPreTree );
+    _engine.getCurrentSearchTree().printSummaryToFile("/home/center/Delta-Marabou/resources/nnet/acasxu/summary.txt");
 //    auto& pre = _engine.getPreSearchTree();
 //    for (size_t i = 0; i < current.size(); ++ i) {
 //        auto& node = current.getNode(i);
