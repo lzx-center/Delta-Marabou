@@ -135,6 +135,8 @@ void SearchTree::markSatLeaf(const Set<unsigned int> &varSet) {
         stack.push_back(current);
         _satisfyPath.push_back(current);
         current = _nodes[current]._preNode;
+        if (current != -1)
+            _nodes[current]._back = node._end;
     }
 }
 
@@ -240,28 +242,44 @@ void SearchTree::printUnSAT() {
 }
 
 void SearchTree::printSummaryToFile(Stringf filePath) {
+    printf("Summary path %s\n", filePath.ascii());
     std::ofstream outfile;
     outfile.open(filePath.ascii());
     std::vector<unsigned> numSubNodes(_nodes.size(), 0);
     getSubTree(0, numSubNodes);
+
+    for (auto &node: _nodes) {
+        node.calcTime();
+        outfile << node.getStringSummary().ascii();
+        outfile << "SubTree size: " << numSubNodes[node._id] - 1 << "\n";
+        outfile << "\n";
+    }
+
+    double totalTime = _nodes[0]._timeToBack;
+    double proveInTime = 0.0, others = 0.0;
+    outfile << "\nCompare tree info:\n";
+    for (auto &node: _nodes) {
+        if (node._preUnSAT != -1) {
+            outfile << Stringf("Current node is : %d, pre search tree node: %d\n", node._id, node._preUnSAT).ascii();
+            outfile << "SubTree size: " << numSubNodes[node._id] - 1 << ", ";
+            outfile << "Process time: " << node._timeToBack << " seconds\n\n";
+            if (numSubNodes[node._id] - 1) {
+                others += node._timeToBack;
+            } else {
+                proveInTime = node._timeToBack;
+            }
+        }
+    }
+
     outfile << "Tree info:\n";
     outfile << Stringf("\tSearch tree size: %d\n",
                        _nodes.size()).ascii();
     if (_resultType == VERIFIED_UNSAT) {
-        outfile << Stringf("Total unsat: %d, can not judge: %d, success rate: %f\n", _totalUnSatInPreTree,
-                           _numCannotJudgeUnSat, 1.0 - 1.0 * _numCannotJudgeUnSat / _totalUnSatInPreTree).ascii();
-    }
-    for (auto &node: _nodes) {
-        outfile << node.getStringSummary().ascii();
-        outfile << "SubTree size: " << numSubNodes[node._id] << "\n";
-        outfile << "\n";
-    }
-
-    outfile << "\nCompare tree info:\n";
-    for (auto &node : _nodes) {
-        if (node._preUnSAT != -1) {
-            outfile << Stringf("Current node is : %d, pre search tree node: %d\n", node._id, node._preUnSAT).ascii();
-            outfile << "SubTree size: " << numSubNodes[node._id] << "\n";
+        if (_totalUnSatInPreTree) {
+            outfile << Stringf("\tTotal unsat: %d, can not judge: %d, success rate: %f%\n", _totalUnSatInPreTree,
+                               _numCannotJudgeUnSat, (1.0 - 1.0 * _numCannotJudgeUnSat / _totalUnSatInPreTree) * 100).ascii();
+            outfile << Stringf("\tTotal time of unsat node prove in place: [%fs], rate %f%; others: [%fs], rate: %f%\n", proveInTime,
+                               proveInTime / totalTime * 100, others, others / totalTime * 100).ascii();
         }
     }
     outfile.close();

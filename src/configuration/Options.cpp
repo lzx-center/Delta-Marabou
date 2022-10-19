@@ -79,6 +79,7 @@ void Options::initializeDefaultValues()
     /*
       String options
     */
+    _stringOptions[SEARCH_TREE_SUMMARY_PATH] = "";
     _stringOptions[SEARCH_TREE_FILE_PATH] = "";
     _stringOptions[INPUT_FILE_PATH] = "";
     _stringOptions[PROPERTY_FILE_PATH] = "";

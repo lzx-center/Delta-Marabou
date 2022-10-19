@@ -59,7 +59,11 @@ void Marabou::run()
 //    _engine.getCurrentSearchTree().print();
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
-    _engine.getCurrentSearchTree().printSummaryToFile("/home/center/Delta-Marabou/resources/nnet/acasxu/summary.txt");
+    auto summary = Options::get()->getString(Options::SEARCH_TREE_SUMMARY_PATH);
+    if (summary == "") {
+        summary = Options::get()->getString(Options::INPUT_FILE_PATH) + ".summary";
+    }
+    _engine.getCurrentSearchTree().printSummaryToFile(summary.ascii());
 }
 
 void Marabou::prepareInputQuery()
@@ -312,19 +316,13 @@ void Marabou::incrementalRun() {
 
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
-    _engine.getCurrentSearchTree().printSummaryToFile("/home/center/Delta-Marabou/resources/nnet/acasxu/summary.txt");
-//    auto& pre = _engine.getPreSearchTree();
-//    for (size_t i = 0; i < current.size(); ++ i) {
-//        auto& node = current.getNode(i);
-//        if (node._preUnSAT!= -1) {
-//            printf("Current node [%d]:\n", node._id);
-//            node.calcTime();
-//            node.printProcessTime();
-//            auto& preNode = pre.getNode(node._preUnSAT);
-//            printf("Pre:\n");
-//            preNode.printProcessTime();
-//        }
-//    }
+    if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
+        exportAssignment();
+    auto summary = Options::get()->getString(Options::SEARCH_TREE_SUMMARY_PATH);
+    if (summary == "") {
+        summary = Options::get()->getString(Options::INPUT_FILE_PATH) + "incremental.summary";
+    }
+    _engine.getCurrentSearchTree().printSummaryToFile(summary.ascii());
 }
 
 void Marabou::loadPreSearchTree(String path) {

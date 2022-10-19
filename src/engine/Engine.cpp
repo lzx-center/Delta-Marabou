@@ -448,6 +448,12 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                                     performBoundTighteningAfterCaseSplit();
                                     informLPSolverOfBounds();
                                     splitJustPerformed = false;
+                                    int count = 0;
+                                    for (auto& constraint : _plConstraints) {
+                                        if (constraint->isActive() and !constraint->phaseFixed()) {
+                                            count ++;
+                                        }
+                                    }
                                     if (FloatUtils::gt(_tableau->getLowerBound(conflict), _tableau->getUpperBound(conflict))) {
                                         throw InfeasibleQueryException();
                                     }
@@ -462,6 +468,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                                     LinearExpression cost;
                                     minimizeCostWithGurobi(cost);
                                     _smtCore._searchTree._numCannotJudgeUnSat += 1;
+                                    printf("Unfixed relu: %d, total constraint: %d\n", count, _plConstraints.size());
                                     printf("Can not judge unsat!\n\n");
                                 }
                             }

@@ -141,6 +141,8 @@ public:
 
         SEARCH_TREE_FILE_PATH,
 
+        SEARCH_TREE_SUMMARY_PATH
+
     };
 
     /*
