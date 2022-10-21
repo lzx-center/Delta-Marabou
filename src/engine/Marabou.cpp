@@ -320,7 +320,7 @@ void Marabou::incrementalRun() {
         exportAssignment();
     auto summary = Options::get()->getString(Options::SEARCH_TREE_SUMMARY_PATH);
     if (summary == "") {
-        summary = Options::get()->getString(Options::INPUT_FILE_PATH) + "incremental.summary";
+        summary = Options::get()->getString(Options::INPUT_FILE_PATH) + ".incremental.summary";
     }
     _engine.getCurrentSearchTree().printSummaryToFile(summary.ascii());
 }
