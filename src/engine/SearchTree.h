@@ -82,7 +82,6 @@ private:
         if (version >= 0) {
             ar & _plLayer & _plNode & _conflictVariable;
             ar & _left & _right & _preNode & _id & _nodeType & _basicVariables & _plType;
-            ar & _timeToBack & _timeToSplit;
         }
     }
 };
