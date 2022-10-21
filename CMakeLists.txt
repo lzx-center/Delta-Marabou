@@ -3,6 +3,7 @@ project(Marabou)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_FLAGS_Release "${CMAKE_C_FLAGS_Release} -O3")
 option(BUILD_STATIC_MARABOU "Build static Marabou binary" OFF)
 option(BUILD_PYTHON "Build Python" ON)
 option(FORCE_PYTHON_BUILD "Build python even if there is only python32" OFF)
