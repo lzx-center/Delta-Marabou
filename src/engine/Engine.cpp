@@ -442,7 +442,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                         auto list = node.getBasicVariableLists();
                         if (node._basicVariables.size() == list.size()) {
                             try {
-                                _tableau->initializeTableau(list);
+//                                _tableau->initializeTableau(list);
                                 if (node.getNodeType() == SearchTreeNode::UNSAT) {
                                     auto conflict = node._conflictVariable;
                                     performBoundTighteningAfterCaseSplit();

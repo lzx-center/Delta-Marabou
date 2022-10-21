@@ -19,6 +19,8 @@ def run_second():
     for path, dir_names, file_names in os.walk(root):
         for file in file_names:
             if file.endswith(".nnet"):
+                if file.endswith("1_3.nnet") or file.endswith("1_5.nnet"):
+                    continue
                 file_path = os.path.join(path, file)
                 file_search_tree = file_path + ".searchTree"
                 command = f"/home/center/Delta-Marabou/build/Marabou {file_path} {properties} --search-tree-file {file_search_tree} --incremental-verification > {file_path + '.5.log'}"
