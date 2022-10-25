@@ -316,13 +316,39 @@ void Marabou::incrementalRun() {
 
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
-    if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
-        exportAssignment();
+
     auto summary = Options::get()->getString(Options::SEARCH_TREE_SUMMARY_PATH);
     if (summary == "") {
         summary = Options::get()->getString(Options::INPUT_FILE_PATH) + ".incremental.summary";
     }
     _engine.getCurrentSearchTree().printSummaryToFile(summary.ascii());
+    if (_engine.getExitCode() == IEngine::SAT) {
+        SearchTree pre;
+        pre.loadFromFile(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
+        auto& now = _engine.getCurrentSearchTree();
+        if (!pre._satisfyPath.empty()) {
+            printf("Pre satisfy path:\n");
+            for (int i = 0; i < pre._satisfyPath.size(); ++ i) {
+                auto& node = pre.getNode(pre._satisfyPath[i]);
+                printf("(%d, %d)", node._plLayer, node._plNode);
+                if (i != pre._satisfyPath.size() - 1) {
+                    printf("<-");
+                    continue;
+                }
+                printf("\n");
+            }
+        }
+        printf("Current satisfy path:\n");
+        for (int i = 0; i < now._satisfyPath.size(); ++ i) {
+            auto& node = now.getNode(now._satisfyPath[i]);
+            printf("(%d, %d)", node._plLayer, node._plNode);
+            if (i != now._satisfyPath.size() - 1) {
+                printf("<-");
+                continue;
+            }
+            printf("\n");
+        }
+    }
 }
 
 void Marabou::loadPreSearchTree(String path) {
