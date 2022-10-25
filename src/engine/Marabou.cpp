@@ -302,8 +302,10 @@ void Marabou::incrementalRun() {
     struct timespec start = TimeUtils::sampleMicro();
     loadPreSearchTree(Options::get()->getString(Options::SEARCH_TREE_FILE_PATH));
     struct timespec end = TimeUtils::sampleMicro();
+    printf("Pre search tree size: %d\n", _engine.getPreSearchTree().size());
     unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
     printf("Load search tree use time: %f\n", 1.0 * totalElapsed / 100000);
+    return;
 
     start = TimeUtils::sampleMicro();
     prepareInputQuery();
