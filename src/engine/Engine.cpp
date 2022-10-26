@@ -439,6 +439,7 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                     if (!visitedLeaf.exists(node._id)) {
                         _smtCore._searchTree.getCurrentNode()._preUnSAT = node._id;
                         _smtCore._searchTree._totalUnSatInPreTree += 1;
+                        _smtCore._searchTree._numCannotJudgeUnSat += 1;
                         if (node.getNodeType() == SearchTreeNode::UNSAT) {
                             auto conflict = node._conflictVariable;
                             performBoundTighteningAfterCaseSplit();
@@ -458,7 +459,6 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                             informLPSolverOfBounds();
                             LinearExpression cost;
                             minimizeCostWithGurobi(cost);
-                            _smtCore._searchTree._numCannotJudgeUnSat += 1;
                             printf("Can not judge unsat! [%d/%d]\n\n", node._id, _smtCore._preSearchTree.size());
                         }
                         visitedLeaf.insert(node._id);
@@ -525,6 +525,10 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
         catch (const InfeasibleQueryException &) {
             _tableau->toggleOptimization(false);
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+            auto& node = _smtCore._searchTree.getCurrentNode();
+            if (node._preUnSAT != -1) {
+                _smtCore._searchTree._numCannotJudgeUnSat --;
+            }
             // The current query is unsat, and we need to pop.
             // If we're at level 0, the whole query is unsat.
             if (!_smtCore.popSplit()) {
@@ -2571,6 +2575,10 @@ bool Engine::restoreSmtState(SmtState &smtState) {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
         _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+        auto& node = _smtCore._searchTree.getCurrentNode();
+        if (node._preUnSAT != -1) {
+            _smtCore._searchTree._numCannotJudgeUnSat --;
+        }
         if (!_smtCore.popSplit()) {
             if (_verbosity > 0) {
                 printf("\nEngine::solve: UNSAT query\n");
