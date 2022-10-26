@@ -118,7 +118,7 @@ void SmtCore::performSplit() {
     bool isIncremental = Options::get()->getBool(Options::INCREMENTAL_VERIFICATION);
     _numRejectedPhasePatternProposal = 0;
     // Maybe the constraint has already become inactive - if so, ignore
-    if (!_constraintForSplitting->isActive()) {
+    if (!_constraintForSplitting->isActive() or _constraintForSplitting->getPhaseStatus() != PHASE_NOT_FIXED) {
         _needToSplit = false;
         _constraintToViolationCount[_constraintForSplitting] = 0;
         if (isIncremental) {
@@ -578,7 +578,7 @@ PiecewiseLinearConstraint *SmtCore::getConstraintByPosition(PiecewiseLinearConst
         return _positionToPLConstraints.at(position);
     }
     if (_positionToEliminatedPLConstraints.exists(position)) {
-        return _positionToPLConstraints.at(position);
+        return _positionToEliminatedPLConstraints.at(position);
     }
     return nullptr;
 }
