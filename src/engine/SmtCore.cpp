@@ -587,6 +587,8 @@ void SmtCore::setConstraintForSplit() {
     auto& node = _preSearchTree.getCurrentNode();
     PiecewiseLinearConstraint* plForSplit = nullptr;
     auto pos = node.getPosition();
+    if (pos._layer == -1 or pos._node == -1)
+        return;
     if (pos._layer == 0) {
         plForSplit = _engine->generateInputDisjunctiveConstraint(pos._node);
     } else {
