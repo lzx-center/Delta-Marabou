@@ -1484,27 +1484,55 @@ void Tableau::setNonBasicAssignment( unsigned variable, double value, bool updat
 
 void Tableau::dumpAssignment()
 {
-    printf( "Dumping assignment\n" );
-    for ( unsigned i = 0; i < _n; ++i )
-    {
-        bool basic = _basicVariables.exists( i );
-        printf( "\tx%u (index: %u)  -->  %.5lf [%s]. ", i, _variableToIndex[i],
-                getValue( i ), basic ? "B" : "NB" );
-        if ( getLowerBound( i ) != FloatUtils::negativeInfinity() )
-            printf( "Range: [ %.5lf, ", getLowerBound( i ) );
-        else
-            printf( "Range: [ -INFTY, " );
-
-        if ( getUpperBound( i ) != FloatUtils::infinity() )
-            printf( "%.5lf ] ", getUpperBound( i ) );
-        else
-            printf( "INFTY ] " );
-
-        if ( basic && basicOutOfBounds( _variableToIndex[i] ) )
-            printf( "*" );
-
-        printf( "\n" );
+    printf( "Assignment\n" );
+//    for ( unsigned i = 0; i < _n; ++i )
+//    {
+//        bool basic = _basicVariables.exists( i );
+//        printf( "\tx%u (index: %u)  -->  %.5lf [%s]. ", i, _variableToIndex[i],
+//                getValue( i ), basic ? "B" : "NB" );
+//        if ( getLowerBound( i ) != FloatUtils::negativeInfinity() )
+//            printf( "Range: [ %.5lf, ", getLowerBound( i ) );
+//        else
+//            printf( "Range: [ -INFTY, " );
+//
+//        if ( getUpperBound( i ) != FloatUtils::infinity() )
+//            printf( "%.5lf ] ", getUpperBound( i ) );
+//        else
+//            printf( "INFTY ] " );
+//
+//        if ( basic && basicOutOfBounds( _variableToIndex[i] ) )
+//            printf( "*" );
+//
+//        printf( "\n" );
+//    }
+    printf("|variable");
+    for(unsigned i = 0; i < _n; ++ i) {
+        printf("|$$x_{%u}$$", i);
     }
+    printf("|\n");
+    for(unsigned i = 0; i < _n + 1; ++ i) {
+        printf("|-");
+    }
+    printf("|\n");
+    printf("|Lower bound");
+    for ( unsigned i = 0; i < _n; ++i ) {
+        printf("|%.3lf", getLowerBound(i));
+    }
+    printf("|\n");
+    printf("|Assignment");
+    for ( unsigned i = 0; i < _n; ++i ) {
+        bool basic = _basicVariables.exists( i );
+        if (basic and basicOutOfBounds( _variableToIndex[i] ))
+            printf("|**%.3lf**", getValue(i));
+        else
+            printf("|%.3lf", getValue(i));
+    }
+    printf("|\n");
+    printf("|Upper bound");
+    for ( unsigned i = 0; i < _n; ++i ) {
+        printf("|%.3lf", getUpperBound(i));
+    }
+    printf("|\n\n");
 }
 
 void Tableau::dump() const
@@ -1605,14 +1633,16 @@ void Tableau::dumpEquations()
 {
     TableauRow row( _n - _m );
 
-    printf( "Dumping tableau equations:\n" );
+    printf( "Tableau:\n$$\n" );
+    printf("\\begin{aligned}\n");
     for ( unsigned i = 0; i < _m; ++i )
     {
-        printf( "x%u = ", _basicIndexToVariable[i] );
+        printf( "x_{%u}&=", _basicIndexToVariable[i] );
         getTableauRow( i, &row );
         row.dump();
-        printf( "\n" );
+        printf( "\\\\\n" );
     }
+    printf("\\end{aligned}\n$$\n");
 }
 
 void Tableau::storeState( TableauState &state, TableauStateStorageLevel level ) const

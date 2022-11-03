@@ -37,14 +37,17 @@ def compare():
                 log2 = os.path.join(path, file + ".2.log")
                 if os.path.exists(log1) and os.path.exists(log2):
                     file1 = open(log1)
-                    res1 = file1.readlines()[-1]
+                    lines1 = file1.readlines()
+                    res1 = lines1[-1]
                     file2 = open(log2)
-                    res2 = file2.readlines()[-1]
-                    if res1 != res2:
-                        print(file)
+                    for line in lines1:
+                        if "Search Tree" in line:
+                            size = int(line.split(" ")[-1].strip("\n"))
+                            if 5 <= size <= 5:
+                                print(file)
 
 
 if __name__ == "__main__":
-    run_first()
-    run_second()
-    # compare()
+    # run_first()
+    # run_second()
+    compare()

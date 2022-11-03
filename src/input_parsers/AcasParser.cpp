@@ -141,6 +141,7 @@ void AcasParser::generateQuery( InputQuery &inputQuery )
 
             // Add the equation to the input query
             inputQuery.addEquation( equation );
+            equation.dump();
         }
     }
 

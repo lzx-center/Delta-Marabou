@@ -36,16 +36,26 @@ double TableauRow::operator[]( unsigned index ) const
 
 void TableauRow::dump() const
 {
+    bool flag = true;
     for ( unsigned i = 0; i < _size; ++i )
     {
         if ( FloatUtils::isZero( _row[i]._coefficient ) )
             continue;
-
-        printf( "%.2lf * x%u, ", _row[i]._coefficient, _row[i]._var );
+        if (FloatUtils::gt(_row[i]._coefficient, 0) and !flag) {
+            printf("+");
+        }
+        printf( "%.3lfx_{%u}", _row[i]._coefficient, _row[i]._var );
+        flag = false;
     }
-
-    printf( "\n\tscalar = %.2lf\n", _scalar );
-    printf( "\tlhs = x%u\n", _lhs );
+    if (!FloatUtils::isZero(_scalar)) {
+        if (FloatUtils::gt(_scalar, 0)) {
+            printf("+%3lf",_scalar);
+        } else {
+            printf("%3lf",_scalar);
+        }
+    }
+//    printf( "\n\tscalar = %.2lf\n", _scalar );
+//    printf( "\tlhs = x%u\n", _lhs );
 }
 
 //

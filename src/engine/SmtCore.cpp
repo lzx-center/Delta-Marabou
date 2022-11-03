@@ -68,7 +68,7 @@ void SmtCore::reportViolatedConstraint(PiecewiseLinearConstraint *constraint) {
     if (_constraintToViolationCount[constraint] >=
         _constraintViolationThreshold) {
         _needToSplit = true;
-        if (!pickSplitPLConstraint())
+//        if (!pickSplitPLConstraint())
             // If pickSplitConstraint failed to pick one, use the native
             // relu-violation based splitting heuristic.
             _constraintForSplitting = constraint;
@@ -102,10 +102,11 @@ void SmtCore::reportRejectedPhasePatternProposal() {
         _needToSplit = true;
         _engine->applyAllBoundTightenings();
         _engine->applyAllValidConstraintCaseSplits();
-        if (!pickSplitPLConstraint())
+//        if (!pickSplitPLConstraint())
             // If pickSplitConstraint failed to pick one, use the native
             // relu-violation based splitting heuristic.
-            _constraintForSplitting = _scoreTracker->topUnfixed();
+        printf("use top fix\n");
+        _constraintForSplitting = _scoreTracker->topUnfixed();
     }
 }
 

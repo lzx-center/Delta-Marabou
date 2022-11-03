@@ -133,7 +133,7 @@ void Equation::dump( String &output ) const
         if ( FloatUtils::isPositive( addend._coefficient ) )
             output += String( "+" );
 
-        output += Stringf( "%.2lfx%u ", addend._coefficient, addend._variable );
+        output += Stringf( "%.2lfx_{%u}", addend._coefficient, addend._variable );
     }
 
     switch ( _type )

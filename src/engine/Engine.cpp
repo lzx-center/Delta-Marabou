@@ -140,7 +140,8 @@ bool Engine::solve(unsigned timeoutInSeconds) {
 
     if (_solveWithMILP)
         return solveWithMILPEncoding(timeoutInSeconds);
-
+    _tableau->dumpEquations();
+    _tableau->dumpAssignment();
     updateDirections();
     if (_lpSolverType == LPSolverType::NATIVE)
         storeInitialEngineState();
@@ -156,8 +157,12 @@ bool Engine::solve(unsigned timeoutInSeconds) {
         _statistics.print();
         printf("\n---\n");
     }
+    printf("initial tableau\n");
 
     applyAllValidConstraintCaseSplits();
+
+    _tableau->dumpAssignment();
+    printf("after split\n");
 
     bool splitJustPerformed = true;
     struct timespec mainLoopStart = TimeUtils::sampleMicro();
@@ -179,7 +184,6 @@ bool Engine::solve(unsigned timeoutInSeconds) {
             _statistics.timeout();
             return false;
         }
-
         if (_quitRequested) {
             if (_verbosity > 0) {
                 printf("\n\nEngine: quitting due to external request...\n\n");
@@ -214,7 +218,8 @@ bool Engine::solve(unsigned timeoutInSeconds) {
                     applyAllValidConstraintCaseSplits();
                 }
             }
-
+            _tableau->dumpEquations();
+            _tableau->dumpAssignment();
             // If true, we just entered a new subproblem
             if (splitJustPerformed) {
                 performBoundTighteningAfterCaseSplit();
@@ -285,6 +290,9 @@ bool Engine::solve(unsigned timeoutInSeconds) {
             }
         }
         catch (const InfeasibleQueryException &) {
+            printf("Judge unsat!\n");
+            _tableau->dumpEquations();
+            _tableau->dumpAssignment();
             _tableau->toggleOptimization(false);
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             // The current query is unsat, and we need to pop.
@@ -707,7 +715,6 @@ void Engine::performConstraintFixingStep() {
     // Statistics
     _statistics.incLongAttribute(Statistics::NUM_CONSTRAINT_FIXING_STEPS);
     struct timespec start = TimeUtils::sampleMicro();
-
     // Select a violated constraint as the target
     selectViolatedPlConstraint();
 
@@ -969,7 +976,9 @@ void Engine::fixViolatedPlConstraintIfPossible() {
     }
 
     // Switch between nonBasic and the variable we need to fix
+    printf("set entering var: x%u\n", bestCandidate);
     _tableau->setEnteringVariableIndex(_tableau->variableToIndex(bestCandidate));
+    printf("set leaving var: x%u\n", fix._variable);
     _tableau->setLeavingVariableIndex(_tableau->variableToIndex(fix._variable));
 
     // Make sure the change column and pivot row are up-to-date - strategies
@@ -1372,10 +1381,11 @@ void Engine::initializeNetworkLevelReasoning() {
 bool Engine::processInputQuery(InputQuery &inputQuery, bool preprocess) {
     ENGINE_LOG("processInputQuery starting\n");
     struct timespec start = TimeUtils::sampleMicro();
-
     try {
         informConstraintsOfInitialBounds(inputQuery);
         invokePreprocessor(inputQuery, preprocess);
+        for (auto &e : _preprocessedQuery->getEquations())
+            e.dump();
         if (_verbosity > 0)
             printInputBounds(inputQuery);
 
@@ -1385,12 +1395,14 @@ bool Engine::processInputQuery(InputQuery &inputQuery, bool preprocess) {
             performSimulation();
             performMILPSolverBoundedTightening(&(*_preprocessedQuery));
         }
-
-        if (GlobalConfiguration::PL_CONSTRAINTS_ADD_AUX_EQUATIONS_AFTER_PREPROCESSING)
+        if (GlobalConfiguration::PL_CONSTRAINTS_ADD_AUX_EQUATIONS_AFTER_PREPROCESSING) {
             for (auto &plConstraint: _preprocessedQuery->getPiecewiseLinearConstraints())
                 plConstraint->addAuxiliaryEquationsAfterPreprocessing
                         (*_preprocessedQuery);
-
+            printf("Don't add!\n");
+        }
+        for (auto &e : _preprocessedQuery->getEquations())
+            e.dump();
         if (_lpSolverType == LPSolverType::NATIVE) {
             double *constraintMatrix = createConstraintMatrix();
             removeRedundantEquations(constraintMatrix);
@@ -2502,8 +2514,7 @@ PiecewiseLinearConstraint *Engine::pickSplitPLConstraint(DivideStrategy
     if (strategy == DivideStrategy::PseudoImpact) {
         if (_smtCore.getStackDepth() > 3)
             candidatePLConstraint = _smtCore.getConstraintsWithHighestScore();
-        else if (_preprocessedQuery->getInputVariables().size() <
-                 GlobalConfiguration::INTERVAL_SPLITTING_THRESHOLD)
+        else if (_preprocessedQuery->getInputVariables().size() < 0)
             candidatePLConstraint = pickSplitPLConstraintBasedOnIntervalWidth();
         else
             candidatePLConstraint = pickSplitPLConstraintBasedOnPolarity();
@@ -2575,6 +2586,8 @@ bool Engine::restoreSmtState(SmtState &smtState) {
         // The current query is unsat, and we need to pop.
         // If we're at level 0, the whole query is unsat.
         _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
+        _tableau->dumpEquations();
+        _tableau->dumpAssignment();
         auto& node = _smtCore._searchTree.getCurrentNode();
         if (node._preUnSAT != -1) {
             _smtCore._searchTree._numCannotJudgeUnSat --;

@@ -24,7 +24,7 @@ const double GlobalConfiguration::EXPONENTIAL_MOVING_AVERAGE_ALPHA = 0.5;
 
 // Whether to use SoI instead of Reluplex for local search for satisfying assignments
 //to non-linear constraint.
-const bool GlobalConfiguration::USE_DEEPSOI_LOCAL_SEARCH = true;
+const bool GlobalConfiguration::USE_DEEPSOI_LOCAL_SEARCH = false;
 
 const double GlobalConfiguration::SCORE_BUMP_FOR_PL_CONSTRAINTS_NOT_IN_SOI = 5;
 
@@ -70,8 +70,8 @@ const double GlobalConfiguration::SYMBOLIC_TIGHTENING_ROUNDING_CONSTANT = 0.0000
 const double GlobalConfiguration::SIGMOID_CUTOFF_CONSTANT = 20;
 
 const bool GlobalConfiguration::PREPROCESS_INPUT_QUERY = true;
-const bool GlobalConfiguration::PREPROCESSOR_ELIMINATE_VARIABLES = true;
-const bool GlobalConfiguration::PL_CONSTRAINTS_ADD_AUX_EQUATIONS_AFTER_PREPROCESSING = true;
+const bool GlobalConfiguration::PREPROCESSOR_ELIMINATE_VARIABLES = false;
+const bool GlobalConfiguration::PL_CONSTRAINTS_ADD_AUX_EQUATIONS_AFTER_PREPROCESSING = false;
 const double GlobalConfiguration::PREPROCESSOR_ALMOST_FIXED_THRESHOLD = 0.00001;
 const bool GlobalConfiguration::PREPROCESSOR_MERGE_CONSECUTIVE_WEIGHTED_SUMS = false;
 
@@ -107,8 +107,8 @@ const bool GlobalConfiguration::GUROBI_LOGGING = false;
 // Logging - note that it is enabled only in Debug mode
 const bool GlobalConfiguration::TREE_LOGGING = false;
 const bool GlobalConfiguration::DNC_MANAGER_LOGGING = false;
-const bool GlobalConfiguration::ENGINE_LOGGING = false;
-const bool GlobalConfiguration::TABLEAU_LOGGING = false;
+const bool GlobalConfiguration::ENGINE_LOGGING = true;
+const bool GlobalConfiguration::TABLEAU_LOGGING = true;
 const bool GlobalConfiguration::SMT_CORE_LOGGING = false;
 const bool GlobalConfiguration::DANTZIGS_RULE_LOGGING = false;
 const bool GlobalConfiguration::BASIS_FACTORIZATION_LOGGING = false;
