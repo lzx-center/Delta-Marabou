@@ -1,3 +1,4 @@
+Load search tree use time: 0.002080
 Network: /home/center/Delta-Marabou/resources/nnet/test1.modify.nnet
 Number of layers: 3. Input layer size: 2. Output layer size: 1. Number of ReLUs: 2
 Total number of variables: 7
@@ -16,9 +17,9 @@ Engine::solve: Initial statistics
 
 18:16:48 Statistics update:
 	--- Time Statistics ---
-	Total time elapsed: 0 milli (00:00:00)
+	Total time elapsed: 25 milli (00:00:00)
 		Main loop: 0 milli (00:00:00)
-		Preprocessing time: 0 milli (00:00:00)
+		Preprocessing time: 24 milli (00:00:00)
 		Unknown: 0 milli (00:00:00)
 	Breakdown for main loop:
 		[0.00%] Simplex steps: 0 milli
@@ -65,7 +66,7 @@ Engine::solve: Initial statistics
 		Number of rows examined by row tightener: 0. Consequent tightenings: 0
 		Number of explicit basis matrices examined by row tightener: 0. Consequent tightenings: 0
 		Number of bound tightening rounds on the entire constraint matrix: 0. Consequent tightenings: 0
-		Number of bound notifications sent to PL constraints: 12. Tightenings proposed: 0
+		Number of bound notifications sent to PL constraints: 36. Tightenings proposed: 0
 	--- Basis Factorization statistics ---
 	Number of basis refactorizations: 2
 	--- Projected Steepest Edge Statistics ---
@@ -81,74 +82,73 @@ Engine::solve: Initial statistics
 
 ---
 fixing!
-fixing!
 
 Engine::solve: unsat query
 
 18:16:48 Statistics update:
 	--- Time Statistics ---
-	Total time elapsed: 1 milli (00:00:00)
+	Total time elapsed: 26 milli (00:00:00)
 		Main loop: 0 milli (00:00:00)
-		Preprocessing time: 0 milli (00:00:00)
+		Preprocessing time: 24 milli (00:00:00)
 		Unknown: 0 milli (00:00:00)
 	Breakdown for main loop:
-		[15.77%] Simplex steps: 0 milli
-		[2.07%] Explicit-basis bound tightening: 0 milli
+		[7.52%] Simplex steps: 0 milli
+		[3.06%] Explicit-basis bound tightening: 0 milli
 		[0.00%] Constraint-matrix bound tightening: 0 milli
 		[0.00%] Degradation checking: 0 milli
 		[0.00%] Precision restoration: 0 milli
-		[0.21%] Statistics handling: 0 milli
-		[4.56%] Constraint-fixing steps: 0 milli
+		[0.13%] Statistics handling: 0 milli
+		[1.78%] Constraint-fixing steps: 0 milli
 		[0.00%] Valid case splits: 0 milli. Average per split: 0.00 milli
-		[1.24%] Applying stored bound-tightening: 0 milli
-		[14.52%] SMT core: 0 milli
-		[67.43%] Symbolic Bound Tightening: 0 milli
+		[1.40%] Applying stored bound-tightening: 0 milli
+		[11.46%] SMT core: 0 milli
+		[53.76%] Symbolic Bound Tightening: 0 milli
 		[0.00%] SoI-based local search: 0 milli
-		[0.00%] SoI-based local search: 0 milli
-		[3827125326495757824.00%] Unaccounted for: 0 milli
+		[47.90%] SoI-based local search: 0 milli
+		[20.89%] Unaccounted for: 0 milli
 	--- Preprocessor Statistics ---
 	Number of preprocessor bound-tightening loop iterations: 3
 	Number of eliminated variables: 0
 	Number of constraints removed due to variable elimination: 0
 	Number of equations removed due to variable elimination: 0
 	--- Engine Statistics ---
-	Number of main loop iterations: 14
-		8 iterations were simplex steps. Total time: 0 milli. Average: 0.00 milli.
-		2 iterations were constraint-fixing steps. Total time: 0 milli. Average: 0.00 milli
+	Number of main loop iterations: 12
+		6 iterations were simplex steps. Total time: 0 milli. Average: 0.00 milli.
+		1 iterations were constraint-fixing steps. Total time: 0 milli. Average: 0.00 milli
 	Number of active piecewise-linear constraints: 1 / 2
 		Constraints disabled by valid splits: 0. By SMT-originated splits: 1
 	Last reported degradation: 0.0000000000. Max degradation so far: 0.0000000000. Restorations so far: 0
 	Number of simplex pivots we attempted to skip because of instability: 0.
 	Unstable pivots performed anyway: 0
 	--- Tableau Statistics ---
-	Total number of pivots performed: 8
-		Real pivots: 6. Degenerate: 2 (25.00%)
-		Degenerate pivots by request (e.g., to fix a PL constraint): 2 (100.00%)
+	Total number of pivots performed: 4
+		Real pivots: 2. Degenerate: 2 (50.00%)
+		Degenerate pivots by request (e.g., to fix a PL constraint): 1 (50.00%)
 		Average time per pivot: 0.00 milli
-	Total number of fake pivots performed: 0
+	Total number of fake pivots performed: 1
 	Total number of rows added: 0. Number of merged columns: 0
 	Current tableau dimensions: M = 5, N = 14
 	--- SMT Core Statistics ---
-	Total depth is 1. Total visited states: 5. Number of splits: 2. Number of pops: 2
+	Total depth is 2. Total visited states: 7. Number of splits: 3. Number of pops: 3
 	Max stack depth: 2
 	--- Bound Tightening Statistics ---
-	Number of tightened bounds: 10.
-		Number of rows examined by row tightener: 6. Consequent tightenings: 3
-		Number of explicit basis matrices examined by row tightener: 1. Consequent tightenings: 0
+	Number of tightened bounds: 15.
+		Number of rows examined by row tightener: 3. Consequent tightenings: 3
+		Number of explicit basis matrices examined by row tightener: 4. Consequent tightenings: 2
 		Number of bound tightening rounds on the entire constraint matrix: 0. Consequent tightenings: 0
-		Number of bound notifications sent to PL constraints: 20. Tightenings proposed: 0
+		Number of bound notifications sent to PL constraints: 62. Tightenings proposed: 0
 	--- Basis Factorization statistics ---
 	Number of basis refactorizations: 2
 	--- Projected Steepest Edge Statistics ---
-	Number of iterations: 6.
-	Number of resets to reference space: 3. Avg. iterations per reset: 2
+	Number of iterations: 4.
+	Number of resets to reference space: 4. Avg. iterations per reset: 1
 	--- SBT ---
-	Number of tightened bounds: 2
+	Number of tightened bounds: 3
 	--- SoI-based local search ---
 	Number of proposed phase pattern update: 0. Number of accepted update: 0 [0.00%]
 	Total time (% of local search time) updating SoI phase pattern : 0 milli [0.00%]
 	Total time obtaining current assignment: 0 milli [0.00%]
 	Total time getting SoI phase pattern : 0 milli [0.00%]
-Search Tree size: 5
+Search Tree size: 7
 unsat
-Summary path /home/center/Delta-Marabou/resources/nnet/test1.modify.nnet.summary
+Summary path /home/center/Delta-Marabou/resources/nnet/test1.modify.nnet.incremental.summary

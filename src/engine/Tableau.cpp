@@ -1507,7 +1507,7 @@ void Tableau::dumpAssignment()
 //    }
     printf("|variable");
     for(unsigned i = 0; i < _n; ++ i) {
-        printf("|$$x_{%u}$$", i);
+        printf("|$%u}$$", i);
     }
     printf("|\n");
     for(unsigned i = 0; i < _n + 1; ++ i) {

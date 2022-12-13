@@ -87,14 +87,61 @@ def generator(file_path, property_path=None):
                 return size
 
 
+def modify(file_path, save_to):
+    with open(file_path) as f:
+        with open(save_to, "w+") as s:
+            lines = f.readlines()
+            for line in lines[:8]:
+                print(line, end="", file=s)
+            for line in lines[8:]:
+                nums = line.strip("\n").split(",")[:-1]
+                for num in nums:
+                    # if len(nums) != 1:
+                    num = float(num) + random.uniform(-0.7, 0.7)
+                    # print('%.4f' % num, end=",", file=s)
+                    print(num, end=",", file=s)
+                print(file=s)
+    command = f"/home/center/Delta-Marabou/build/Marabou {save_to} {'/home/center/Delta-Marabou/resources/nnet/testp.txt'} > ./test.log"
+    os.system(command)
+    with open("./test.log") as f:
+        lines = f.readlines()
+        size = 0
+        for line in lines:
+            if "Search Tree" in line:
+                size = int(line.split(" ")[-1].strip("\n"))
+        if size > 1:
+            for line in lines:
+                if "unsat" in line:
+                    print("modify unsat")
+                    command = f"/home/center/Delta-Marabou/build/Marabou {save_to} " \
+                              "/home/center/Delta-Marabou/resources/nnet/testp.txt " \
+                              "--search-tree-file-path /home/center/Delta-Marabou/resources/nnet/test1.nnet.searchTree" \
+                              " --incremental-verification" \
+                              " > ./test2.log "
+                    os.system(command)
+                    with open("./test2.log") as s:
+                        lines = s.readlines()
+                        for line in lines:
+                            if "unsat" in line:
+                                print("after unsat")
+                                return size
+                    break
+        return 0
+
+
 if __name__ == "__main__":
     net_path = "/home/center/Delta-Marabou/resources/nnet/test1.nnet"
     prop_path = "/home/center/Delta-Marabou/resources/nnet/testp.txt"
+
     while True:
-        size = generator(net_path, prop_path)
-        if 6 <= size <= 6:
-            command = f"cp {net_path} {net_path.strip('.nnet')}_{size}.1.nnet"
-            os.system(command)
-            command = f"cp {prop_path} {prop_path.strip('.txt')}_{size}.1.txt"
-            os.system(command)
+        size = modify(net_path, net_path.replace("test1.nnet", "test1.modify.nnet"))
+        if size > 1:
             break
+    # while True:
+    #     size = generator(net_path, prop_path)
+    #     if 6 <= size <= 6:
+    #         command = f"cp {net_path} {net_path.strip('.nnet')}_{size}.1.nnet"
+    #         os.system(command)
+    #         command = f"cp {prop_path} {prop_path.strip('.txt')}_{size}.1.txt"
+    #         os.system(command)
+    #         break

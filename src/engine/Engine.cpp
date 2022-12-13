@@ -531,6 +531,8 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
             }
         }
         catch (const InfeasibleQueryException &) {
+            _tableau->dumpEquations();
+            _tableau->dumpAssignment();
             _tableau->toggleOptimization(false);
             _smtCore._searchTree.markUnsatLeaf(getBasicVariable(), getInconsistentVariable());
             auto& node = _smtCore._searchTree.getCurrentNode();
