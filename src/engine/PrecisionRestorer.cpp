@@ -43,6 +43,12 @@ void PrecisionRestorer::restorePrecision( IEngine &engine,
     engine.storeState( targetEngineState,
                        TableauStateStorageLevel::STORE_NONE );
 
+    std::vector<double> upper(targetN), lower(targetN);
+    for (unsigned i = 0; i < targetN; ++ i) {
+        upper[i] = tableau.getUpperBound(i);
+        lower[i] = tableau.getLowerBound(i);
+    }
+
     // Store the case splits performed so far
     List<PiecewiseLinearCaseSplit> targetSplits;
     smtCore.allSplitsSoFar( targetSplits );
@@ -103,6 +109,11 @@ void PrecisionRestorer::restorePrecision( IEngine &engine,
                     "basis after setting basics" );
             }
         }
+    }
+    // Restore bounds
+    for (unsigned i = 0; i < targetN; ++ i) {
+        tableau.setUpperBound(i, upper[i]);
+        tableau.setLowerBound(i, lower[i]);
     }
 
     // Restore constraint status
