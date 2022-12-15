@@ -440,27 +440,6 @@ bool Engine::incrementalSolve(unsigned timeoutInSeconds) {
                         _smtCore._searchTree.getCurrentNode()._preUnSAT = node._id;
                         _smtCore._searchTree._totalUnSatInPreTree += 1;
                         _smtCore._searchTree._numCannotJudgeUnSat += 1;
-                        if (node.getNodeType() == SearchTreeNode::UNSAT) {
-                            auto conflict = node._conflictVariable;
-                            performBoundTighteningAfterCaseSplit();
-                            informLPSolverOfBounds();
-                            splitJustPerformed = false;
-
-                            if (FloatUtils::gt(_tableau->getLowerBound(conflict), _tableau->getUpperBound(conflict))) {
-                                throw InfeasibleQueryException();
-                            }
-                            auto inputs = _preprocessedQuery->getInputVariables();
-                            List<Tightening> tightens;
-                            for (auto input : inputs) {
-                                refineBound(input, tightens);
-                            }
-                            applyTightens(tightens);
-                            performBoundTighteningAfterCaseSplit();
-                            informLPSolverOfBounds();
-                            LinearExpression cost;
-                            minimizeCostWithGurobi(cost);
-                            printf("Can not judge unsat! [%d/%d]\n\n", node._id, _smtCore._preSearchTree.size());
-                        }
                         visitedLeaf.insert(node._id);
                     }
                 }

@@ -596,8 +596,6 @@ void SmtCore::setConstraintForSplit() {
         plForSplit = getConstraintByPosition(pos);
     }
     assert(plForSplit != nullptr && "constraint is nullptr");
-//        String s; plForSplit->dump(s);
-//        printf("Ready for split: %s", s.ascii());
     setPiecewiseLinearConstraintForSplit(plForSplit);
 }
 

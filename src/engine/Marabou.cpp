@@ -56,14 +56,17 @@ void Marabou::run()
     unsigned long long totalElapsed = TimeUtils::timePassed( start, end );
     displayResults( totalElapsed );
 
-//    _engine.getCurrentSearchTree().print();
+    _engine.getCurrentSearchTree().print();
     if( Options::get()->getBool( Options::EXPORT_ASSIGNMENT ) )
         exportAssignment();
     auto summary = Options::get()->getString(Options::SEARCH_TREE_SUMMARY_PATH);
     if (summary == "") {
         summary = Options::get()->getString(Options::INPUT_FILE_PATH) + ".summary";
     }
-    _engine.getCurrentSearchTree().printSummaryToFile(summary.ascii());
+    auto& searchTree = _engine.getCurrentSearchTree();
+//    searchTree.printSummaryToFile(summary.ascii());
+    searchTree.generatePath();
+    searchTree.printPaths();
 }
 
 void Marabou::prepareInputQuery()

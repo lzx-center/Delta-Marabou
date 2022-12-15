@@ -298,6 +298,41 @@ void SearchTree::getSubTree(int current, std::vector<unsigned int> &numSubNode) 
     }
 }
 
+void SearchTree::generatePath() {
+    dfsGetPath(0);
+}
+
+void SearchTree::dfsGetPath(int id) {
+    static std::vector<Element> path;
+    auto node = _nodes[id];
+
+    if (node._left == -1) {
+        _paths.push_back(path);
+        return;
+    }
+
+
+    int left = node._left, right = node._right;
+    path.emplace_back(node._plLayer, node._plNode, LEFT, id);
+    dfsGetPath(left);
+    path.pop_back();
+
+    path.emplace_back(node._plLayer, node._plNode, RIGHT, id);
+    dfsGetPath(right);
+    path.pop_back();
+}
+
+void SearchTree::printPaths() {
+    for (size_t i = 0; i < _paths.size(); ++ i) {
+        printf("Path %zu: ", i + 1);
+        for (auto& e : _paths[i]) {
+            Stringf s(""); e.dump(s);
+            printf("%s ", s.ascii());
+        }
+        printf("\n");
+    }
+}
+
 
 void SearchTreeNode::print() {
     printf(

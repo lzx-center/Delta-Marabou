@@ -28,8 +28,8 @@ public:
     explicit SearchTreeNode(int id = 0) : _id(id), _nodeType(PATH_NODE), _conflictVariable(-1), _left(-1),
                                           _right(-1), _preNode(-1), _plLayer(-1), _plNode(-1), _plType(UNKNOWN),
                                           _start(TimeUtils::sampleMicro()), _end(TimeUtils::sampleMicro()),
-                                          _back(TimeUtils::sampleMicro()), _preUnSAT(-1), _timeToBack(0.0), _timeToSplit(0.0)
-                                          {}
+                                          _back(TimeUtils::sampleMicro()), _preUnSAT(-1), _timeToBack(0.0),
+                                          _timeToSplit(0.0) {}
 
     int _id;
     NodeType _nodeType;
@@ -67,8 +67,11 @@ public:
     static String getTypeString(PiecewiseLinearFunctionType type);
 
     void print();
+
     Stringf getStringSummary();
+
     void printProcessTime();
+
     void calcTime();
 
 private:
@@ -118,9 +121,26 @@ private:
         }
     }
 
+    struct Element {
+        int _layer, _node, _id;
+        DirectionType _direction;
+
+        Element(int layer, int node, DirectionType direction = CANT_JUDGE, int id = -1) : _layer(layer), _node(node),
+                                                                                          _direction(direction),
+                                                                                          _id(id) {}
+
+        void dump(Stringf &string) {
+            string += Stringf("(%d, %d, %s, %d)", _layer, _node,
+                              (_direction == LEFT ? "left" : (_direction == RIGHT ? "right" : "can't judge")), _id);
+        }
+    };
+
+    std::vector<std::vector<Element>> _paths;
+
 public:
     int _numCannotJudgeUnSat = 0;
     int _totalUnSatInPreTree = 0;
+
     SearchTree();
 
     void setTreeNodeThreshold(unsigned num);
@@ -155,6 +175,12 @@ public:
         _current = index;
     }
 
+    void generatePath();
+
+    void dfsGetPath(int id);
+
+    void printPaths();
+
     void saveToFile(const String &filePath);
 
     void loadFromFile(const String &filePath);
@@ -180,9 +206,13 @@ public:
     ResultTYpe getResultType() { return _resultType; }
 
     void print();
+
     void printPreUnSat();
+
     void printUnSAT();
-    void printSummaryToFile(Stringf filePath="");
+
+    void printSummaryToFile(Stringf filePath = "");
+
     void getSubTree(int current, std::vector<unsigned int> &numSubNode);
 };
 
